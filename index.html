@@ -28,8 +28,9 @@
     <label for="associateddata">associated data:</label>
     <textarea id="associateddata" type="text" placeholder="text to be authenticated"  rows="4" cols="50"></textarea>
     <br><br>
-    <center><button type="submit" onclick="alert(encrypt(document.getElementById('key').value,  document.getElementById('nonce').value, document.getElementById('plaintext').value, document.getElementById('associateddata').value))">Encrypt</button></center>
+    <center><button type="submit" onclick="document.getElementById('encryption_result').innerText = encrypt(document.getElementById('key').value,  document.getElementById('nonce').value, document.getElementById('plaintext').value, document.getElementById('associateddata').value)">Encrypt</button></center>
     <br>
+    <p id="encryption_result"></p>
 
     <!-- Decrypt -->
     <center><p>===========================================</p></center>
@@ -41,19 +42,20 @@
     <label for="nonce_d">nonce:</label>
     <input id="nonce_d" type="text" size="33" placeholder="e.g: 1a6527a36645ddb9490671dc5d1e1ebb">
     <br><br>
-    <label for="ciphertext_d">ciphertext:</label>
-    <textarea id="ciphertext_d" type="text" placeholder="text to be decrypted" rows="4" cols="50"></textarea>
+    <label for="ciphertext">ciphertext:</label>
+    <textarea id="ciphertext" type="text" placeholder="text to be decrypted" rows="4" cols="50"></textarea>
     <br><br>
     <label for="associateddata_d">associated data:</label>
     <textarea id="associateddata_d" type="text" placeholder="text to be authenticated"  rows="4" cols="50"></textarea>
     <br><br>
-    <center><button type="submit" onclick="alert(decrypt(document.getElementById('key_d').value,  document.getElementById('nonce_d').value, document.getElementById('ciphertext_d').value, document.getElementById('associateddata_d').value))">Decrypt</button></center>
+    <center><button type="submit" onclick="document.getElementById('decryption_result').innerText = decrypt(document.getElementById('key_d').value,  document.getElementById('nonce_d').value, document.getElementById('ciphertext').value, document.getElementById('associateddata_d').value)">Decrypt</button></center>
     <br>
+    <p id="decryption_result"></p>
 
     <script type="text/javascript" src="script.js"></script>
     <footer>
         <center><p><b>________________________</b></p></center>
-        <center><p><a style="text-decoration:none" href="https://github.com/motarekk/motarekk.github.io" target="_blank">source code</a></p></center>
+        <center><p><a style="text-decoration:none" href="https://github.com/motarekk" target="_blank">source code</a></p></center>
         <center><p>by <a style="text-decoration:none" href="https://www.linkedin.com/in/mohamed-tarek-159a821ba" target="_blank">motarek</a></p></center>
     </footer>
 </body>
