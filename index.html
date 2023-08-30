@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>playascon</title>
+</head>
+<body>
+    <!-- Description -->
+    <center><h2>{ playascon }</h2></center>
+    <br>
+    <center><p>&lt;&lt; Making <a href="https://ascon.iaik.tugraz.at/" target="_blank">Ascon</a> cipher easier to play with &gt;&gt;</p></center>
+    <center><p>===========================================</p></center>
+    <p>note: key & nonce must be entered in hexadecimal.</p>
+
+    <!-- Encrypt -->
+    <center><h4 style="text-decoration-line: underline;">Encrypt</h4></center>
+    <center><p>***</p></center>
+    <label for="key">key:</label>
+    <input id="key" type="text" size="33" placeholder="e.g: eaa9119aa3a9bd5e50bccda4e13d1c03"> <button onclick="document.getElementById('key').value = get_random_bytes(16)">generate random key</button>
+    <br><br>
+    <label for="nonce">nonce:</label>
+    <input id="nonce" type="text" size="33" placeholder="e.g: 1a6527a36645ddb9490671dc5d1e1ebb">  <button onclick="document.getElementById('nonce').value = get_random_bytes(16)">generate random nonce</button>
+    <br><br>
+    <label for="plaintext">plaintext:</label>
+    <textarea id="plaintext" type="text" placeholder="text to be encrypted" rows="4" cols="50"></textarea>
+    <br><br>
+    <label for="associateddata">associated data:</label>
+    <textarea id="associateddata" type="text" placeholder="text to be authenticated"  rows="4" cols="50"></textarea>
+    <br><br>
+    <center><button type="submit" onclick="alert(encrypt(document.getElementById('key').value,  document.getElementById('nonce').value, document.getElementById('plaintext').value, document.getElementById('associateddata').value))">Encrypt</button></center>
+    <br>
+
+    <!-- Decrypt -->
+    <center><p>===========================================</p></center>
+    <center><h4 style="text-decoration-line: underline;">Decrypt</h4></center>
+    <center><p>***</p></center>
+    <label for="key_d">key:</label>
+    <input id="key_d" type="text" size="33" placeholder="e.g: eaa9119aa3a9bd5e50bccda4e13d1c03">
+    <br><br>
+    <label for="nonce_d">nonce:</label>
+    <input id="nonce_d" type="text" size="33" placeholder="e.g: 1a6527a36645ddb9490671dc5d1e1ebb">
+    <br><br>
+    <label for="ciphertext_d">ciphertext:</label>
+    <textarea id="ciphertext_d" type="text" placeholder="text to be decrypted" rows="4" cols="50"></textarea>
+    <br><br>
+    <label for="associateddata_d">associated data:</label>
+    <textarea id="associateddata_d" type="text" placeholder="text to be authenticated"  rows="4" cols="50"></textarea>
+    <br><br>
+    <center><button type="submit" onclick="alert(decrypt(document.getElementById('key_d').value,  document.getElementById('nonce_d').value, document.getElementById('ciphertext_d').value, document.getElementById('associateddata_d').value))">Decrypt</button></center>
+    <br>
+
+    <script type="text/javascript" src="script.js"></script>
+    <footer>
+        <center><p><b>________________________</b></p></center>
+        <center><p><a style="text-decoration:none" href="https://github.com/motarekk" target="_blank">source code</a></p></center>
+        <center><p>by <a style="text-decoration:none" href="https://www.linkedin.com/in/mohamed-tarek-159a821ba" target="_blank">motarek</a></p></center>
+    </footer>
+</body>
+</html>
