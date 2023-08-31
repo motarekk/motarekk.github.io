@@ -133,10 +133,9 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
     var mult = 2;
 
     for(var i = 0; i < blocks; i+=rate){
-        // processing last block of ciphertext if the length of ad % rate == 0
         Ci = BigInt('0x' + ciphertext.slice(i*2, i+rate*mult));
         mult+=1;
-        plaintext += int_to_hex(S[0] ^ Ci); 
+        plaintext += to_unicode(int_to_hex(S[0] ^ Ci)); 
         S[0] = Ci;
         ascon_permutation(S, b);
     }
@@ -144,7 +143,7 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
     // processing of last block t
     var c_last = pad_ciphertext(ciphertext.slice(blocks*2), rate);
     plaintext += to_unicode(int_to_hex(c_last ^ S[0])).slice(0, c_lastlen); 
-    var padded_plaintext = pad_last(plaintext.slice(blocks*2), rate);
+    var padded_plaintext = pad_last(plaintext.slice(blocks), rate);
     
     // double the padding if pt is empty (required padding: 8 bytes)
     if(plaintext == ''){
@@ -163,14 +162,14 @@ function ascon_finalize(S, a, key) {
     }
 
     // step 1: XOR the key with the state, then permute
-    S[1] ^= BigInt('0x' + key.slice(0, 16)); // int(key[:8].hex(), 16)
-    S[2] ^= BigInt('0x' + key.slice(16)); // int(key[8:].hex(), 16)
+    S[1] ^= BigInt('0x' + key.slice(0, 16));
+    S[2] ^= BigInt('0x' + key.slice(16));
 
     ascon_permutation(S, a);
 
     // step 2: 4th & 5th raws of the state are xored with the key, and the result will be the tag
-    S[3] ^= BigInt('0x' + key.slice(0, 16)); // int(key[:8].hex(), 16)
-    S[4] ^= BigInt('0x' + key.slice(16)); // int(key[8:].hex(), 16)
+    S[3] ^= BigInt('0x' + key.slice(0, 16));
+    S[4] ^= BigInt('0x' + key.slice(16));
     var tag = int_to_hex(S[3]) + int_to_hex(S[4]);
 
     return tag;
@@ -198,7 +197,7 @@ function ascon_permutation(S, rounds) {
         S[1] ^= S[0];
         S[0] ^= S[4];
         S[3] ^= S[2];
-        S[2] ^= BigInt('0XFFFFFFFFFFFFFFFF');// binary signed 2's complement of ~[S2]
+        S[2] ^= BigInt('0XFFFFFFFFFFFFFFFF'); // XORing with 1s = NOT operation
     
         // step 3: linear diffusion layer
         S[0] ^= rotr(S[0], 19) ^ rotr(S[0], 28);
