@@ -319,7 +319,7 @@ function pad(data, rate){
     if(data.length % rate == 0){
         return str_to_long(data);
     } else {
-        return BigInt('0x' + (bytes_to_hex(to_ascii((data))) + bytes_to_hex(padding)).replace(/,/g, ''));
+        return BigInt('0x' + (bytes_to_hex_(to_ascii((data))) + bytes_to_hex(padding)).replace(/,/g, ''));
     }
 }    
 
@@ -332,7 +332,7 @@ function pad_last(data, rate){
         padding = '80' + ''.padEnd(rate-1*2, '0');
     }
 
-    return BigInt('0x' + (bytes_to_hex(to_ascii((data))) + bytes_to_hex(padding)).replace(/,/g, ''));
+    return BigInt('0x' + (bytes_to_hex_(to_ascii((data))) + bytes_to_hex(padding)).replace(/,/g, ''));
 }    
 
 function pad_ciphertext(data, rate){
