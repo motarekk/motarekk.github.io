@@ -373,3 +373,20 @@ function decrypt(key, nonce, ct, ad){
     }
 
 }
+
+// hall of fame
+var flag = false;
+var hof ="<p>Thanks to all who reported bugs and contributed to improve this tool.</p><p>______________</p><p>Joshua Holden</p><p>Majid M.Niknam</p><p>______________</p><br>";
+function toggle(){
+    if(!flag){
+        document.getElementById('arrow').classList.remove('rotate-up');
+        document.getElementById('arrow').classList.add('rotate-down');
+        document.getElementById('hof').innerHTML = hof;
+        flag = true;
+    } else {
+        document.getElementById('arrow').classList.remove('rotate-down');
+        document.getElementById('arrow').classList.add('rotate-up');
+        document.getElementById('hof').innerHTML = "";
+        flag = false;
+    }
+}
