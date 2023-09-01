@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>playascon</title>
+    <style>
+        /* 
+        * style for hall of fame drop down
+        */
+        .rotate-down {
+            transform: rotate(180deg);
+            -webkit-transition: all .4s ease-in-out;
+            transition: all .4s ease-in-out;
+        }
+        .rotate-up {
+            transform: rotate(0deg);
+            -webkit-transition: all .4s ease-in-out;
+            transition: all .4s ease-in-out;
+        }
+    </style>
 </head>
 <body>
     <!-- Description -->
@@ -55,6 +70,11 @@
     <script type="text/javascript" src="script.js"></script>
     <footer>
         <center><p><b>________________________</b></p></center>
+        <!-- Hall of Fame -->
+        <center style="display: flex; justify-content: center; color: #0000ffe7; cursor: pointer;" onclick="toggle()"><p>Hall of Fame</p><p id="arrow">&#9660;</p></center>
+        <center>
+            <div id="hof"></div>
+        </center>
         <center><p><a style="text-decoration:none" href="https://github.com/motarekk/motarekk.github.io" target="_blank">source code</a></p></center>
         <center><p>by <a style="text-decoration:none" href="https://www.linkedin.com/in/mohamed-tarek-159a821ba" target="_blank">motarek</a></p></center>
     </footer>
