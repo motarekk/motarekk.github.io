@@ -298,7 +298,7 @@ function int_to_hex(int) {
 // convert string > ascii > hex > decimal
 // equivalent to 'int("str".hex(), 16)' in python
 function str_to_long(str) {
-    var str = bytes_to_hex(to_ascii(str));
+    var str = bytes_to_hex_(to_ascii(str));
     var long = "";
     for(var i = 0; i < str.length; i++){
         long += str[i];
