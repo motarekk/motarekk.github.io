@@ -78,7 +78,7 @@ function ascon_process_associated_data(S, b, rate, associateddata) {
         for(var i = 0; i < required_len; i+=rate){
             // processing of last block of associated data if the length of ad % rate == 0
             if(ad_lastlen % rate == 0 && i+rate+1 > required_len){
-                S[0] ^= pad_last(associateddata.slice(i, i+rate), rate)
+                S[0] ^= pad_last(associateddata.slice(i, i+rate), rate*2)
             }
 
             S[0] ^= pad(associateddata.slice(i, i+rate), rate)
