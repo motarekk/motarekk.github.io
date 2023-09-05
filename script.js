@@ -6,6 +6,16 @@
 // Ascon main steps: initialize > associated data > plaintext/ciphertext > finalization
 // key & nonce must be entered in hexadecimal
 
+// supporting non-english languages
+var eng = true;
+function non_eng(){
+    if(eng){
+        eng = false;
+    } else {
+        eng = true;
+    }
+}
+
 // parameters
 var S = [0, 0, 0, 0, 0];    // state raws
 var a = 12;    // intial & final rounds
@@ -16,6 +26,11 @@ function ascon_encrypt(key, nonce, associateddata, plaintext) { // input
     // make sure parameters are within the correct ranges
     if(key.length != 32 | nonce.length != 32){
         return "key & nonce must be 16 bytes";
+    }
+
+    // URI-encode plaintext to support non-english texts
+    if(!eng){
+        plaintext = uri_encode_preserve_special_chars(plaintext)
     }
 
     // process
@@ -67,6 +82,11 @@ function ascon_initialize(S, a, key, nonce) {
 }
 
 function ascon_process_associated_data(S, b, rate, associateddata) {
+    // URI-encode plaintext to support non-english texts
+    if(!eng){
+        associateddata = uri_encode_preserve_special_chars(associateddata)
+    }
+    
     if (associateddata.length > 0) {
         // padding
         var ad_lastlen = associateddata.length % rate;
@@ -152,6 +172,11 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
 
     S[0] ^= padded_plaintext;
 
+    // URI-decode plaintext if it's encoded to support non-english texts
+    if(!eng){
+        plaintext = decodeURIComponent(plaintext)
+    }
+    
     return plaintext;
 }
 
@@ -343,6 +368,14 @@ function pad_ciphertext(data, rate){
     return BigInt('0x' + ((data) + bytes_to_hex(padding)).replace(/,/g, ''));
 }
 
+// preserve special characters while URI-encoding
+function uri_encode_preserve_special_chars(text){
+    return encodeURIComponent(text).replaceAll('%0A', '\n').replaceAll('%20',' ').replaceAll('%2B','+').replaceAll('%3D', '=').replaceAll('%2F','/').replaceAll('%5C','\\').replaceAll('%26','&').replaceAll('%5E','^').replaceAll('%24','$').replaceAll('%23','#').replaceAll('%40','@').replaceAll('%60','`').replaceAll('%3C','<').replaceAll('%3E','>').replaceAll('%22','\"').replaceAll('%7B', '{').replaceAll('%7D','}').replaceAll('%5B','[').replaceAll('%5D',']').replaceAll('%7C','|').replaceAll('%3F','?').replaceAll('%3B',';').replaceAll('%3A',':').replaceAll('%2C',','); 
+}
+
+/*
+=== end of helper functions ===
+*/
 
 // encryption
 function encrypt(key, nonce, pt, ad){
