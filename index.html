@@ -38,7 +38,7 @@
     <input id="nonce" type="text" size="33" placeholder="e.g: 1a6527a36645ddb9490671dc5d1e1ebb">  <button onclick="document.getElementById('nonce').value = get_random_bytes(16)">generate random nonce</button>
     <br><br>
     <label for="plaintext">plaintext:</label>
-    <textarea id="plaintext" type="text" placeholder="text to be encrypted" rows="4" cols="50"></textarea>
+    <textarea id="plaintext" type="text" placeholder="text to be encrypted" rows="4" cols="50"></textarea><label for="lang"> Non-English</label><input id="lang" type="checkbox" onclick="non_eng()">
     <br><br>
     <label for="associateddata">associated data:</label>
     <textarea id="associateddata" type="text" placeholder="text to be authenticated"  rows="4" cols="50"></textarea>
