@@ -33,10 +33,10 @@
     <center><h4 style="text-decoration-line: underline;">Encrypt</h4></center>
     <center><p>***</p></center>
     <label for="key">key:</label>
-    <input id="key" type="text" size="33" placeholder="e.g: eaa9119aa3a9bd5e50bccda4e13d1c03"> <button onclick="document.getElementById('key').value = get_random_bytes(16)">generate random key</button>
+    <input id="key" type="text" size="33" placeholder="128-bits"> <button onclick="document.getElementById('key').value = get_random_bytes(16)">generate random key</button>
     <br><br>
     <label for="nonce">nonce:</label>
-    <input id="nonce" type="text" size="33" placeholder="e.g: 1a6527a36645ddb9490671dc5d1e1ebb">  <button onclick="document.getElementById('nonce').value = get_random_bytes(16)">generate random nonce</button>
+    <input id="nonce" type="text" size="33" placeholder="128-bits">  <button onclick="document.getElementById('nonce').value = get_random_bytes(16)">generate random nonce</button>
     <br><br>
     <label for="plaintext">plaintext:</label>
     <textarea id="plaintext" type="text" placeholder="text to be encrypted" rows="4" cols="50"></textarea><label for="lang"> Non-English</label><input id="lang" type="checkbox" onclick="non_eng()">
@@ -53,10 +53,10 @@
     <center><h4 style="text-decoration-line: underline;">Decrypt</h4></center>
     <center><p>***</p></center>
     <label for="key_d">key:</label>
-    <input id="key_d" type="text" size="33" placeholder="e.g: eaa9119aa3a9bd5e50bccda4e13d1c03">
+    <input id="key_d" type="text" size="33" placeholder="128-bits">
     <br><br>
     <label for="nonce_d">nonce:</label>
-    <input id="nonce_d" type="text" size="33" placeholder="e.g: 1a6527a36645ddb9490671dc5d1e1ebb">
+    <input id="nonce_d" type="text" size="33" placeholder="128-bits">
     <br><br>
     <label for="ciphertext">ciphertext:</label>
     <textarea id="ciphertext" type="text" placeholder="text to be decrypted" rows="4" cols="50"></textarea>
