@@ -64,7 +64,7 @@ function ascon_aead(key, nonce, associateddata, data, operation, variant){
 
 function ascon_initialize(S, rate, a, b, key, nonce) {
     var iv_zeros = "00000000";
-    var iv = int_to_hex(bytes_to_hex([128])+bytes_to_hex([rate*8])+"0"+bytes_to_hex([a])+bytes_to_hex(["0"+b])+iv_zeros)
+    var iv = int_to_hex(bytes_to_hex([128])+bytes_to_hex([rate*8])+"0"+bytes_to_hex([a])+bytes_to_hex(["0"+b])+iv_zeros);
     var initial_state = iv + key + nonce;
 
     // filling the state
@@ -79,13 +79,13 @@ function ascon_initialize(S, rate, a, b, key, nonce) {
         S[i] ^= zero_key[i];
     }
 
-    return S
+    return S;
 }
 
 function ascon_process_associated_data(S, b, rate, associateddata) {
     // URI-encode plaintext to support non-english texts
     if(!eng){
-        associateddata = uri_encode_preserve_special_chars(associateddata)
+        associateddata = uri_encode_preserve_special_chars(associateddata);
     }
     
     if (associateddata.length > 0) {
@@ -99,15 +99,15 @@ function ascon_process_associated_data(S, b, rate, associateddata) {
         for(var i = 0; i < required_len; i+=rate){
             // processing of last block of associated data if the length of ad % rate == 0
             if(ad_lastlen % rate == 0 && i+rate+1 > required_len){
-                S[0] ^= pad_last(associateddata.slice(i, i+8), 16)
+                S[0] ^= pad_last(associateddata.slice(i, i+8), 16);
                 if(rate == 16){
-                    S[1] ^= pad_last(associateddata.slice(i+8, i+16), 16)
+                    S[1] ^= pad_last(associateddata.slice(i+8, i+16), 16);
                 }
             }
 
-            S[0] ^= pad(associateddata.slice(i, i+8), 8)
+            S[0] ^= pad(associateddata.slice(i, i+8), 8);
             if(rate == 16){
-                S[1] ^= pad(associateddata.slice(i+8, i+16), 8)
+                S[1] ^= pad(associateddata.slice(i+8, i+16), 8);
             }
 
             ascon_permutation(S, b);
@@ -133,31 +133,43 @@ function ascon_process_plaintext(S, b, rate, plaintext) {
             ciphertext += int_to_hex(S[0]);
         } else if (rate == 16){
             S[0] ^= pad(plaintext.slice(i, i+8), 8);
-            S[1] ^= pad(plaintext.slice(i+8, i+16), 8);
+            if(plaintext.slice(i+8, i+16) != ""){
+                S[1] ^= pad(plaintext.slice(i+8, i+16), 8);
+            } else {
+                S[1] ^= pad_last(plaintext.slice(i+8, i+16), 8*2);
+            }
             ciphertext += int_to_hex(S[0]) + int_to_hex(S[1]);
-            
         }
         ascon_permutation(S, b);
     }
 
     // processing of last block t
-    var p_last = pad_last(plaintext.slice(-p_lastlen), 8);
-
-    // double the padding if pt is empty (required padding: 8 bytes)
-    if(plaintext == ''){
-        var p_last = pad_last(plaintext, rate*2);
-    }
-
     if(rate == 8){
+        var p_last = pad_last(plaintext.slice(blocks), rate);
+
+        // double the padding if pt is empty (required padding: 8 bytes)
+        if(plaintext == ''){
+            p_last = pad_last(plaintext, rate*2);
+        }
         S[0] ^= p_last;
         ciphertext += int_to_hex(S[0]).slice(0, p_lastlen*2);
+    
     } else if(rate == 16){
-        S[0] ^= pad(plaintext.slice(blocks, blocks+8), 8);
-
-        if(plaintext.slice(blocks+8) != ""){
+        var p_last = pad(plaintext.slice(blocks, blocks+8), 8);
+        
+        // double the padding if pt is empty (required padding: 8 bytes)
+        if(plaintext == ''){
+            p_last = pad_last(plaintext.slice(blocks, blocks+8), 8*2);
+        }
+        S[0] ^= p_last;
+        
+        if(plaintext.length % 16 == 0 || plaintext.length < 8){
+            S[1] ^= 0n;
+        } else if(plaintext.length % 16 % 8 == 0){
+            S[1] ^= 9223372036854775808n;
+        } else {
             S[1] ^= pad_last(plaintext.slice(blocks+8), 8);
         }
-
         ciphertext += int_to_hex(S[0]).slice(0, Math.min(8*2, p_lastlen*2)) + int_to_hex(S[1]).slice(0, Math.max(0, p_lastlen*2-16));
     }
 
@@ -218,7 +230,11 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
         
         // if(plaintext.slice(blocks+rate) != ""){
         if(c_lastlen >= 8){
-            S[1] ^= pad_last(plaintext.slice(blocks+8, blocks+16), 8);
+            if(plaintext.slice(blocks+8) == ""){
+                S[1] ^= pad_last(plaintext.slice(blocks+8), 8*2);
+            } else {
+                S[1] ^= pad_last(plaintext.slice(blocks+8, blocks+16), 8);
+            }
         }
     }
 
@@ -308,7 +324,7 @@ function rotr(val, r){
 function get_random_bytes(num){
     var buf = new Uint8Array(num);
     crypto.getRandomValues(buf);
-    buf = bytes_to_hex_(buf)
+    buf = bytes_to_hex_(buf);
     var urandom = "";
     for(var i = 0; i < buf.length; i++){
         urandom += buf[i];
@@ -456,13 +472,13 @@ function decrypt(key, nonce, ad, ct, variant){
     var ct = ct;
     var ad = ad;
     var pt =  ascon_aead(key, nonce, ad, ct, "decrypt", variant);
-    var verification = ""
+    var verification = "";
 
     if(pt != null){
         verification = "succeeded!";
         return "plaintext: " + pt + "\nverification: " + verification;
     } else {
-        return "verification failed!"
+        return "verification failed!";
     }
 
 }
