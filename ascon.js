@@ -175,12 +175,13 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
         var padded_plaintext = pad(plaintext.slice(blocks), rate);
         S[0] ^= str_to_long(padded_plaintext);
     } else if(rate == 16){
-        var c_last = [pad_ciphertext(ciphertext.slice(blocks*2, blocks*2+rate), 8), pad_ciphertext(ciphertext.slice(blocks*2+rate), 8)];
-        plaintext += to_unicode(int_to_hex(S[0] ^ c_last[0]) + int_to_hex(S[1] ^ c_last[1])).slice(0, c_lastlen); 
-        var padded_plaintext = pad(plaintext.slice(blocks), rate);
         if(c_lastlen < 8){
+            var c_last = [pad_ciphertext(ciphertext.slice(blocks*2, blocks*2+rate), 8), pad_ciphertext(ciphertext.slice(blocks*2+rate), 8)];
+            plaintext += to_unicode(int_to_hex(S[0] ^ c_last[0]) + int_to_hex(S[1] ^ c_last[1])).slice(0, c_lastlen); 
             S[0] ^= str_to_long(pad(plaintext.slice(blocks), 8));
         } else{
+            var c_last = [pad_ciphertext_(ciphertext.slice(blocks*2, blocks*2+rate), 8), pad_ciphertext_(ciphertext.slice(blocks*2+rate), 8)];
+            plaintext += to_unicode(int_to_hex(S[0] ^ c_last[0]) + int_to_hex(S[1] ^ c_last[1])).slice(0, c_lastlen); 
             S[0] ^= str_to_long(pad(plaintext.slice(blocks, blocks+8), 8));
             S[1] ^= str_to_long(pad(plaintext.slice(blocks+8),8)) 
         }
