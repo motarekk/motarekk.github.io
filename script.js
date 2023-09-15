@@ -363,15 +363,10 @@ function pad_ciphertext(data, rate){
     var d_lastlen = (data.length/2) % rate;
     var d_zero_bytes = rate - d_lastlen;
     var padding = ''.padEnd(d_zero_bytes*2, '0');
-
     if(data == ""){
         data = "0";
     }
-    if(data.length % rate == 0){
-        return BigInt('0x' + data);
-    } else {
-        return BigInt('0x' + (data + bytes_to_hex(padding)).replace(/,/g, ''));
-    }
+    return BigInt('0x' + (data + bytes_to_hex(padding)).replace(/,/g, ''));
 }
 
 // preserve special characters while URI-encoding
