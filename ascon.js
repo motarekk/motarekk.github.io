@@ -370,6 +370,21 @@ function pad_ciphertext(data, rate){
     return BigInt('0x' + (data + bytes_to_hex(padding)).replace(/,/g, ''));
 }
 
+function pad_ciphertext_(data, rate){
+    var d_lastlen = (data.length/2) % rate;
+    var d_zero_bytes = rate - d_lastlen;
+    var padding = ''.padEnd(d_zero_bytes*2, '0');
+
+    if(data == ""){
+        data = "0";
+    }
+    if(data.length % rate == 0){
+        return BigInt('0x' + data);
+    } else {
+        return BigInt('0x' + (data + bytes_to_hex(padding)).replace(/,/g, ''));
+    }
+}
+
 // preserve special characters while URI-encoding
 function uri_encode_preserve_special_chars(text){
     return encodeURIComponent(text).replaceAll('%0A', '\n').replaceAll('%20',' ').replaceAll('%2B','+').replaceAll('%3D', '=').replaceAll('%2F','/').replaceAll('%5C','\\').replaceAll('%26','&').replaceAll('%5E','^').replaceAll('%24','$').replaceAll('%23','#').replaceAll('%40','@').replaceAll('%60','`').replaceAll('%3C','<').replaceAll('%3E','>').replaceAll('%22','\"').replaceAll('%7B', '{').replaceAll('%7D','}').replaceAll('%5B','[').replaceAll('%5D',']').replaceAll('%7C','|').replaceAll('%3F','?').replaceAll('%3B',';').replaceAll('%3A',':').replaceAll('%2C',','); 
