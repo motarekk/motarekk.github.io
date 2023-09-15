@@ -2,6 +2,7 @@
 <p align="center">
 <img width="250" alt="ascon_sponge_canal_system" src="https://github.com/motarekk/motarekk.github.io/assets/104282801/206bd7c5-f184-4f53-9ccb-eba4c5221787">
 </p>
+
 ### Ascon AEAD implementation in Javascript 
 #### This is playascon. No server side or fancy designs. All encryption and decryption is done in your browser.
 
