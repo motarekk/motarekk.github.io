@@ -1,10 +1,12 @@
-// Javascript implementation of Ascon-128 AEAD
-// By Mohamed Tarek, aka. motarek
-// GitHub: https://github.com/motarekk
-// Email: 0xmohamed.tarek@gmail.com
-// LinkedIn: https://www.linkedin.com/in/mohamed-tarek-159a821ba/
-// Ascon main steps: initialize > associated data > plaintext/ciphertext > finalization
-// key & nonce must be entered in hexadecimal
+/*
+* Javascript implementation of Ascon-128 AEAD
+* By Mohamed Tarek, aka. motarek
+* GitHub: https://github.com/motarekk
+* Email: 0xmohamed.tarek@gmail.com
+* LinkedIn: https://www.linkedin.com/in/mohamed-tarek-159a821ba/
+* Ascon main steps: initialize > associated data > plaintext/ciphertext > finalization
+* key & nonce must be entered in hexadecimal
+*/
 
 // supporting non-english languages
 var eng = true;
@@ -78,7 +80,6 @@ function ascon_initialize(S, rate, a, b, key, nonce) {
     for(var i = 0; i < 5; i++) {
         S[i] ^= zero_key[i];
     }
-
     return S;
 }
 
@@ -90,54 +91,38 @@ function ascon_process_associated_data(S, b, rate, associateddata) {
     
     if (associateddata.length > 0) {
         // padding
-        var ad_lastlen = associateddata.length % rate;
-        var ad_zero_bytes = (rate - ad_lastlen) - 1;
-        var required_len = associateddata.length + ad_zero_bytes + 1;
+        var ad_padded = pad(associateddata, rate);
 
-        // absorbtion of associated data
-        // XOR padded associated data with the rate, then permute
-        for(var i = 0; i < required_len; i+=rate){
-            // processing of last block of associated data if the length of ad % rate == 0
-            if(ad_lastlen % rate == 0 && i+rate+1 > required_len){
-                S[0] ^= pad_last(associateddata.slice(i, i+8), 16);
-                if(rate == 16){
-                    S[1] ^= pad_last(associateddata.slice(i+8, i+16), 16);
-                }
-            }
+        for(var block = 0; block < ad_padded.length; block+=rate){
+            S[0] ^= str_to_long(ad_padded.slice(block,block+8));
 
-            S[0] ^= pad(associateddata.slice(i, i+8), 8);
             if(rate == 16){
-                S[1] ^= pad(associateddata.slice(i+8, i+16), 8);
+                S[1] ^= str_to_long(ad_padded.slice(block+8, block+16))
             }
-
             ascon_permutation(S, b);
         }
+        }
+        S[4] ^= BigInt(1);
     }
-
-    S[4] ^= BigInt(1);
-}
 
 function ascon_process_plaintext(S, b, rate, plaintext) {
     // padding
+    var padded_plaintext = pad(plaintext, rate);
     var p_lastlen = plaintext.length % rate;
     var p_zero_bytes = (rate - p_lastlen) - 1;
     var required_len = plaintext.length + p_zero_bytes + 1;
-
+    
     // absorbtion of plaintext & squeezing of ciphertext
     // processing of first t-1 blocks (all blocks except the last one)
     var ciphertext = []; 
     var blocks = required_len - rate;
     for(var i = 0; i < blocks; i+=rate){
         if(rate == 8){
-            S[0] ^= pad(plaintext.slice(i, i+8), rate);
+            S[0] ^= str_to_long(padded_plaintext.slice(i, i+8));
             ciphertext += int_to_hex(S[0]);
-        } else if (rate == 16){
-            S[0] ^= pad(plaintext.slice(i, i+8), 8);
-            if(plaintext.slice(i+8, i+16) != ""){
-                S[1] ^= pad(plaintext.slice(i+8, i+16), 8);
-            } else {
-                S[1] ^= pad_last(plaintext.slice(i+8, i+16), 8*2);
-            }
+        } else if(rate == 16){
+            S[0] ^= str_to_long(padded_plaintext.slice(i, i+8));
+            S[1] ^= str_to_long(padded_plaintext.slice(i+8, i+16));
             ciphertext += int_to_hex(S[0]) + int_to_hex(S[1]);
         }
         ascon_permutation(S, b);
@@ -145,34 +130,13 @@ function ascon_process_plaintext(S, b, rate, plaintext) {
 
     // processing of last block t
     if(rate == 8){
-        var p_last = pad_last(plaintext.slice(blocks), rate);
-
-        // double the padding if pt is empty (required padding: 8 bytes)
-        if(plaintext == ''){
-            p_last = pad_last(plaintext, rate*2);
-        }
-        S[0] ^= p_last;
+        S[0] ^= str_to_long(pad(plaintext.slice(blocks), rate));
         ciphertext += int_to_hex(S[0]).slice(0, p_lastlen*2);
-    
     } else if(rate == 16){
-        var p_last = pad(plaintext.slice(blocks, blocks+8), 8);
-        
-        // double the padding if pt is empty (required padding: 8 bytes)
-        if(plaintext == ''){
-            p_last = pad_last(plaintext.slice(blocks, blocks+8), 8*2);
-        }
-        S[0] ^= p_last;
-        
-        if(plaintext.length % 16 == 0 || plaintext.length < 8){
-            S[1] ^= 0n;
-        } else if(plaintext.length % 16 % 8 == 0){
-            S[1] ^= 9223372036854775808n;
-        } else {
-            S[1] ^= pad_last(plaintext.slice(blocks+8), 8);
-        }
-        ciphertext += int_to_hex(S[0]).slice(0, Math.min(8*2, p_lastlen*2)) + int_to_hex(S[1]).slice(0, Math.max(0, p_lastlen*2-16));
+        S[0] ^= str_to_long(padded_plaintext.slice(blocks, blocks+8));
+        S[1] ^= str_to_long(padded_plaintext.slice(blocks+8));
+        ciphertext += int_to_hex(S[0]).slice(0, Math.min(16, p_lastlen*2)) + int_to_hex(S[1]).slice(0, Math.max(0, p_lastlen*2-16));
     }
-
     return ciphertext;
 }
 
@@ -201,7 +165,6 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
             S[0] = Ci[0];
             S[1] = Ci[1];
         }
-        
         ascon_permutation(S, b);
     }
 
@@ -209,32 +172,17 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
     if(rate == 8){
         var c_last = pad_ciphertext(ciphertext.slice(blocks*2), rate);
         plaintext += to_unicode(int_to_hex(S[0] ^ c_last)).slice(0, c_lastlen); 
-        var padded_plaintext = pad_last(plaintext.slice(blocks), rate);
-
-        // double the padding if pt is empty (required padding: 8 bytes)
-        if(plaintext == ''){
-            padded_plaintext = pad_last(plaintext, rate*2);
-        }
-        S[0] ^= padded_plaintext;
-   
+        var padded_plaintext = pad(plaintext.slice(blocks), rate);
+        S[0] ^= str_to_long(padded_plaintext);
     } else if(rate == 16){
         var c_last = [pad_ciphertext(ciphertext.slice(blocks*2, blocks*2+rate), 8), pad_ciphertext(ciphertext.slice(blocks*2+rate), 8)];
         plaintext += to_unicode(int_to_hex(S[0] ^ c_last[0]) + int_to_hex(S[1] ^ c_last[1])).slice(0, c_lastlen); 
-        var padded_plaintext = pad(plaintext.slice(blocks, blocks+8), 8);
-
-        // double the padding if pt is empty (required padding: 8 bytes)
-        if(plaintext == ''){
-            padded_plaintext = pad_last(plaintext, 8*2);
-        }
-        S[0] ^= padded_plaintext;
-        
-        // if(plaintext.slice(blocks+rate) != ""){
-        if(c_lastlen >= 8){
-            if(plaintext.slice(blocks+8) == ""){
-                S[1] ^= pad_last(plaintext.slice(blocks+8), 8*2);
-            } else {
-                S[1] ^= pad_last(plaintext.slice(blocks+8, blocks+16), 8);
-            }
+        var padded_plaintext = pad(plaintext.slice(blocks), rate);
+        if(c_lastlen < 8){
+            S[0] ^= str_to_long(pad(plaintext.slice(blocks), 8));
+        } else{
+            S[0] ^= str_to_long(pad(plaintext.slice(blocks, blocks+8), 8));
+            S[1] ^= str_to_long(pad(plaintext.slice(blocks+8),8)) 
         }
     }
 
@@ -245,7 +193,6 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
             return null;
         }
     }
-
     return plaintext;
 }
 
@@ -265,7 +212,6 @@ function ascon_finalize(S, rate, a, key) {
     S[3] ^= BigInt('0x' + key.slice(0, 16));
     S[4] ^= BigInt('0x' + key.slice(16));
     var tag = int_to_hex(S[3]) + int_to_hex(S[4]);
-    
     return tag;
 }
 
@@ -329,7 +275,6 @@ function get_random_bytes(num){
     for(var i = 0; i < buf.length; i++){
         urandom += buf[i];
     }
-
     return urandom;
 }
 // convert hexadecimal to bytes (equivalent to 'bytes.fromhex' in python)
@@ -386,7 +331,6 @@ function int_to_hex(int) {
     while(int.length % 8 != 0) {
         int = '0' + int;
     }
-
     return int;
 }
 // convert string > ascii > hex > decimal
@@ -397,37 +341,23 @@ function str_to_long(str) {
     for(var i = 0; i < str.length; i++){
         long += str[i];
     }
-
     return BigInt('0x0' + long);
 }
 
 function pad(data, rate){
     var d_lastlen = data.length % rate;
     var d_zero_bytes = (rate - d_lastlen) - 1;
-    var padding = '80' + ''.padEnd(d_zero_bytes*2, '0');
+    var padding = "\x80";
 
-    if(data.length % rate == 0){
-        padding = '80' + ''.padEnd(7*2, '0');
-    }
-
-    if(data.length % rate == 0){
-        return str_to_long(data);
+    if(data !="" && data.length % rate == 0){
+        padding = "";
     } else {
-        return BigInt('0x' + (bytes_to_hex_(to_ascii((data))) + bytes_to_hex(padding)).replace(/,/g, ''));
+        for(var i = 0; i < d_zero_bytes; i++){
+            padding += "\x00";
+        }
     }
-}    
-
-function pad_last(data, rate){
-    var d_lastlen = data.length % rate;
-    var d_zero_bytes = (rate - d_lastlen) - 1;
-    var padding = '80' + ''.padEnd(d_zero_bytes*2, '0');
-
-    if(data.length % rate == 0){
-        padding = '80' + ''.padEnd(rate-1*2, '0');
-    }
-
-    return BigInt('0x' + (bytes_to_hex_(to_ascii((data))) + bytes_to_hex(padding)).replace(/,/g, ''));
-}    
+    return data + padding;
+}
 
 function pad_ciphertext(data, rate){
     var d_lastlen = (data.length/2) % rate;
@@ -461,7 +391,6 @@ function encrypt(key, nonce, ad, pt, variant){
     var ad = ad;
     var ct =  ascon_aead(key, nonce, ad, pt, "encrypt", variant);
     var tag = ct.slice(-32);
-
     return "ciphertext: " + ct.slice(0, -32) + "\ntag: " + tag;
 }
 
