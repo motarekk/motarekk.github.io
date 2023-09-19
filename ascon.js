@@ -350,12 +350,8 @@ function pad(data, rate){
     var d_zero_bytes = (rate - d_lastlen) - 1;
     var padding = "\x80";
 
-    if(data !="" && data.length % rate == 0){
-        padding = "";
-    } else {
-        for(var i = 0; i < d_zero_bytes; i++){
-            padding += "\x00";
-        }
+    for(var i = 0; i < d_zero_bytes; i++){
+        padding += "\x00";
     }
     return data + padding;
 }
