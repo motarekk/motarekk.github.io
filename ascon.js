@@ -1,5 +1,6 @@
 /*
-* Javascript implementation of Ascon-128 AEAD
+* Javascript implementation of Ascon AEAD & Ascon XOF
+* Supported variants: Ascon-128, Ascon-128a, XOF, XOFa
 * By Mohamed Tarek, aka. motarek
 * GitHub: https://github.com/motarekk
 * Email: 0xmohamed.tarek@gmail.com
@@ -64,6 +65,47 @@ function ascon_aead(key, nonce, associateddata, data, operation, variant){
     }
 }
 
+// Ascon-XOF
+function ascon_xof(message, hashlength, variant){
+    // parameters
+    var S = [0, 0, 0, 0, 0];    // state raws
+    var rate = 8        // bytes
+    var a = 12;     // intial & final rounds
+    var b = 12;      // intermediate rounds
+
+    if(variant=="Ascon-XOFa"){
+        b = 8;
+    }
+
+    // intialization
+    var iv = (int_to_hex(0, 2) + int_to_hex(rate*8,2) + int_to_hex(a, 2) + int_to_hex(a-b,2)).padEnd(16, '0');
+    var zeros = int_to_hex(0, 64);
+    var S = bytes_to_state(iv+zeros);
+    ascon_permutation(S, a);
+
+    // padding
+    m_padded = pad(message, rate);
+
+    // processing of first s-1 blocks
+    for(var block = 0; block < m_padded.length-rate; block += rate){
+        S[0] ^= str_to_long(m_padded.slice(block, block+8));
+        ascon_permutation(S, b);
+    }
+
+    // processing of last block
+    var block = m_padded.length - rate;
+    S[0] ^= str_to_long(m_padded.slice(block, block+8));
+
+    // finalization: Message Squeezing
+    var H = "";
+    ascon_permutation(S, a);
+    while(H.length < hashlength*2){
+        H += int_to_hex(S[0], 16);
+        ascon_permutation(S, b);
+    }
+    return H.slice(0, hashlength*2);
+}
+
 function ascon_initialize(S, rate, a, b, key, nonce) {
     var iv_zeros = "00000000";
     var iv = int_to_hex(bytes_to_hex([128])+bytes_to_hex([rate*8])+"0"+bytes_to_hex([a])+bytes_to_hex(["0"+b])+iv_zeros);
@@ -94,7 +136,7 @@ function ascon_process_associated_data(S, b, rate, associateddata) {
         var ad_padded = pad(associateddata, rate);
 
         for(var block = 0; block < ad_padded.length; block+=rate){
-            S[0] ^= str_to_long(ad_padded.slice(block,block+8));
+            S[0] ^= str_to_long(ad_padded.slice(block, block+8));
 
             if(rate == 16){
                 S[1] ^= str_to_long(ad_padded.slice(block+8, block+16))
@@ -326,10 +368,10 @@ function bytes_to_hex_(bytes){
     return hex;
 }
 // equivalent to 'to_bytes(8, "big").hex()' in python
-function int_to_hex(int) {
+function int_to_hex(int, pad=8) {
     var int = int.toString(16);
 
-    while(int.length % 8 != 0) {
+    while(int.length % pad != 0) {
         int = '0' + int;
     }
     return int;
@@ -392,10 +434,6 @@ function uri_encode_preserve_special_chars(text){
 
 // encryption
 function encrypt(key, nonce, ad, pt, variant){
-    var key = key;
-    var nonce = nonce;
-    var pt = pt;
-    var ad = ad;
     var ct =  ascon_aead(key, nonce, ad, pt, "encrypt", variant);
     var tag = ct.slice(-32);
     return "ciphertext: " + ct.slice(0, -32) + "\ntag: " + tag;
@@ -403,10 +441,6 @@ function encrypt(key, nonce, ad, pt, variant){
 
 // decryption
 function decrypt(key, nonce, ad, ct, variant){
-    var key = key;
-    var nonce = nonce;
-    var ct = ct;
-    var ad = ad;
     var pt =  ascon_aead(key, nonce, ad, ct, "decrypt", variant);
     var verification = "";
 
@@ -417,6 +451,14 @@ function decrypt(key, nonce, ad, ct, variant){
         return "verification failed!";
     }
 
+}
+
+function xof(message, hashlength, variant){
+    if(hashlength==''){
+        hashlength = 32;
+    }
+    var H = ascon_xof(message, hashlength, variant);
+    return "Hash: " + H;
 }
 
 // hall of fame
