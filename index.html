@@ -35,52 +35,92 @@
     <center><p>===========================================</p></center>
     <!-- Ascon variants -->
     <label for="variants">variant</label>
-    <select name="variants" id="variants">
+    <select name="variants" onchange="change_variant(document.getElementsByName('variants')[0].value)" id="variants">
     <option value="Ascon-128">Ascon-128</option>
     <option value="Ascon-128a">Ascon-128a</option>
+    <option value="Ascon-XOF">Ascon-XoF</option>
+    <option value="Ascon-XOFa">Ascon-XoFa</option>
     </select>
 
     <p>note: key & nonce must be entered in hexadecimal.</p>
 
+    <!-- XoF -->
+    <div style="display: none;" id="xof_section">
+        <center><h4 style="text-decoration-line: underline;">Extendible Output Function (XOF)</h4></center>
+        <center><p>***</p></center>
+        <label for="message">message: </label>
+        <textarea id="message" type="text" placeholder="text to be authenticated" rows="4" cols="50"></textarea>
+        <br><br>
+        <label for="hashlength">output length (bytes):</label>
+        <input id="hashlength" type="number" size="33" placeholder="32 bytes by default" step="8">
+        <br><br>
+        <center><button type="submit" onclick="document.getElementById('XOF_result').innerText = xof(document.getElementById('message').value, document.getElementById('hashlength').value, document.getElementsByName('variants')[0].value)">Hash</button></center>
+        <br>
+        <p id="XOF_result"></p>
+    </div>
+
     <!-- Encrypt -->
-    <center><h4 style="text-decoration-line: underline;">Encrypt</h4></center>
-    <center><p>***</p></center>
-    <label for="key">key:</label>
-    <input id="key" type="text" size="33" placeholder="128-bits"> <button onclick="document.getElementById('key').value = get_random_bytes(16)">generate random key</button>
-    <br><br>
-    <label for="nonce">nonce:</label>
-    <input id="nonce" type="text" size="33" placeholder="128-bits">  <button onclick="document.getElementById('nonce').value = get_random_bytes(16)">generate random nonce</button>
-    <br><br>
-    <label for="plaintext">plaintext:</label>
-    <textarea id="plaintext" type="text" placeholder="text to be encrypted" rows="4" cols="50"></textarea><label for="lang"> Non-English</label><input id="lang" type="checkbox" onclick="non_eng()">
-    <br><br>
-    <label for="associateddata">associated data:</label>
-    <textarea id="associateddata" type="text" placeholder="text to be authenticated"  rows="4" cols="50"></textarea>
-    <br><br>
-    <center><button type="submit" onclick="document.getElementById('encryption_result').innerText = encrypt(document.getElementById('key').value,  document.getElementById('nonce').value, document.getElementById('associateddata').value, document.getElementById('plaintext').value, document.getElementsByName('variants')[0].value)">Encrypt</button></center>
-    <br>
-    <p id="encryption_result"></p>
+    <div style="display: block;" id="encrypt_section">
+        <center><h4 style="text-decoration-line: underline;">Encrypt</h4></center>
+        <center><p>***</p></center>
+        <label for="key">key:</label>
+        <input id="key" type="text" size="33" placeholder="128-bits"> <button onclick="document.getElementById('key').value = get_random_bytes(16)">generate random key</button>
+        <br><br>
+        <label for="nonce">nonce:</label>
+        <input id="nonce" type="text" size="33" placeholder="128-bits">  <button onclick="document.getElementById('nonce').value = get_random_bytes(16)">generate random nonce</button>
+        <br><br>
+        <label for="plaintext">plaintext:</label>
+        <textarea id="plaintext" type="text" placeholder="text to be encrypted" rows="4" cols="50"></textarea><label for="lang"> Non-English</label><input id="lang" type="checkbox" onclick="non_eng()">
+        <br><br>
+        <label for="associateddata">associated data:</label>
+        <textarea id="associateddata" type="text" placeholder="text to be authenticated"  rows="4" cols="50"></textarea>
+        <br><br>
+        <center><button type="submit" onclick="document.getElementById('encryption_result').innerText = encrypt(document.getElementById('key').value,  document.getElementById('nonce').value, document.getElementById('associateddata').value, document.getElementById('plaintext').value, document.getElementsByName('variants')[0].value)">Encrypt</button></center>
+        <br>
+        <p id="encryption_result"></p>
+    </div>
 
     <!-- Decrypt -->
-    <center><p>===========================================</p></center>
-    <center><h4 style="text-decoration-line: underline;">Decrypt</h4></center>
-    <center><p>***</p></center>
-    <label for="key_d">key:</label>
-    <input id="key_d" type="text" size="33" placeholder="128-bits">
-    <br><br>
-    <label for="nonce_d">nonce:</label>
-    <input id="nonce_d" type="text" size="33" placeholder="128-bits">
-    <br><br>
-    <label for="ciphertext">ciphertext:</label>
-    <textarea id="ciphertext" type="text" placeholder="text to be decrypted" rows="4" cols="50"></textarea>
-    <br><br>
-    <label for="associateddata_d">associated data:</label>
-    <textarea id="associateddata_d" type="text" placeholder="text to be authenticated"  rows="4" cols="50"></textarea>
-    <br><br>
-    <center><button type="submit" onclick="document.getElementById('decryption_result').innerText = decrypt(document.getElementById('key_d').value,  document.getElementById('nonce_d').value, document.getElementById('associateddata_d').value, document.getElementById('ciphertext').value, document.getElementsByName('variants')[0].value)">Decrypt</button></center>
-    <br>
-    <p id="decryption_result"></p>
+    <div style="display: block;" id="decrypt_section">
+        <center><p>===========================================</p></center>
+        <center><h4 style="text-decoration-line: underline;">Decrypt</h4></center>
+        <center><p>***</p></center>
+        <label for="key_d">key:</label>
+        <input id="key_d" type="text" size="33" placeholder="128-bits">
+        <br><br>
+        <label for="nonce_d">nonce:</label>
+        <input id="nonce_d" type="text" size="33" placeholder="128-bits">
+        <br><br>
+        <label for="ciphertext">ciphertext:</label>
+        <textarea id="ciphertext" type="text" placeholder="text to be decrypted" rows="4" cols="50"></textarea>
+        <br><br>
+        <label for="associateddata_d">associated data:</label>
+        <textarea id="associateddata_d" type="text" placeholder="text to be authenticated"  rows="4" cols="50"></textarea>
+        <br><br>
+        <center><button type="submit" onclick="document.getElementById('decryption_result').innerText = decrypt(document.getElementById('key_d').value,  document.getElementById('nonce_d').value, document.getElementById('associateddata_d').value, document.getElementById('ciphertext').value, document.getElementsByName('variants')[0].value)">Decrypt</button></center>
+        <br>
+        <p id="decryption_result"></p>
+    </div>
+    
+    <script>
+        var xof_section = document.getElementById("xof_section");
+        var encrypt_section = document.getElementById("encrypt_section");
+        var decrypt_section = document.getElementById("decrypt_section");
+        var variant = document.getElementsByName('variants')[0].value;
 
+        function change_variant(variant){
+            variant = variant;
+            if(variant == "Ascon-XOF" || variant == "Ascon-XOFa"){
+                xof_section.style.display = "block";
+                encrypt_section.style.display = "none";
+                decrypt_section.style.display = "none";
+            } else {
+                xof_section.style.display = "none";
+                encrypt_section.style.display = "block";
+                decrypt_section.style.display = "block";
+            }
+        }
+    </script>
     <script type="text/javascript" src="ascon.js"></script>
     <footer>
         <center><p><b>________________________</b></p></center>
