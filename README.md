@@ -6,7 +6,7 @@
 ### Ascon AEAD implementation in Javascript 
 #### This is playascon. No server side or fancy designs. All encryption and decryption is done in your browser.
 
-#### - supported variants: Ascon-128, Ascon-128a
+#### - supported variants: Ascon-128, Ascon-128a, Ascon-XOF, Ascon-XOFa
 #### - Non-English texts encryption/decryption is supported
 #### Enjoy: [playascon](https://motarekk.github.io/)
 #
