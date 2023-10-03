@@ -7,9 +7,6 @@
     <title>playascon</title>
     <link rel="icon" type="image/x-icon" href="./ascon_sponge.png">
     <style>
-        /* 
-        * style for hall of fame drop down
-        */
         .rotate-down {
             transform: rotate(180deg);
             -webkit-transition: all .4s ease-in-out;
@@ -20,7 +17,7 @@
             -webkit-transition: all .4s ease-in-out;
             transition: all .4s ease-in-out;
         }
-        .img {
+        .ascon_sponge {
             padding-top: 0.7em;
             width: 2.4em;
             height: 2.4em; 
@@ -29,25 +26,29 @@
 </head>
 <body>
     <!-- Description -->
-    <center style="display: flex; justify-content: center;"><img class="img" src="./ascon_sponge.png" alt="ascon_sponge" title="ascon_sponge"><h2>playascon</h2></center>
-    <br>
-    <center><p>&lt;&lt; Making <a href="https://ascon.iaik.tugraz.at/" target="_blank">Ascon</a> cipher easier to play with &gt;&gt;</p></center>
-    <center><p>===========================================</p></center>
+    <center>
+        <div style="display: flex; justify-content: center;"><img class="ascon_sponge" src="./ascon_sponge.png" alt="ascon_sponge" title="ascon_sponge"><h2>playascon</h2></div>
+        <br>
+        <p>&lt;&lt; Making <a href="https://ascon.iaik.tugraz.at/" target="_blank">Ascon</a> cipher easier to play with &gt;&gt;</p>
+        <p>===========================================</p>
+    </center>
     <!-- Ascon variants -->
     <label for="variants">variant</label>
     <select name="variants" onchange="change_variant(document.getElementsByName('variants')[0].value)" id="variants">
     <option value="Ascon-128">Ascon-128</option>
     <option value="Ascon-128a">Ascon-128a</option>
-    <option value="Ascon-XOF">Ascon-XoF</option>
-    <option value="Ascon-XOFa">Ascon-XoFa</option>
+    <option value="Ascon-XOF">Ascon-XOF</option>
+    <option value="Ascon-XOFa">Ascon-XOFa</option>
     </select>
 
     <p>note: key & nonce must be entered in hexadecimal.</p>
 
     <!-- XoF -->
     <div style="display: none;" id="xof_section">
-        <center><h4 style="text-decoration-line: underline;">Extendible Output Function (XOF)</h4></center>
-        <center><p>***</p></center>
+        <center>
+            <h4 style="text-decoration-line: underline;">Extendible Output Function (XOF)</h4>
+            <p>***</p>
+        </center>
         <label for="message">message: </label>
         <textarea id="message" type="text" placeholder="text to be authenticated" rows="4" cols="50"></textarea>
         <br><br>
@@ -61,8 +62,10 @@
 
     <!-- Encrypt -->
     <div style="display: block;" id="encrypt_section">
-        <center><h4 style="text-decoration-line: underline;">Encrypt</h4></center>
-        <center><p>***</p></center>
+        <center>
+            <h4 style="text-decoration-line: underline;">Encrypt</h4>
+            <p>***</p>
+        </center>
         <label for="key">key:</label>
         <input id="key" type="text" size="33" placeholder="128-bits"> <button onclick="document.getElementById('key').value = get_random_bytes(16)">generate random key</button>
         <br><br>
@@ -82,9 +85,11 @@
 
     <!-- Decrypt -->
     <div style="display: block;" id="decrypt_section">
-        <center><p>===========================================</p></center>
-        <center><h4 style="text-decoration-line: underline;">Decrypt</h4></center>
-        <center><p>***</p></center>
+        <center>
+            <p>===========================================</p>
+            <h4 style="text-decoration-line: underline;">Decrypt</h4>
+            <p>***</p>
+        </center>
         <label for="key_d">key:</label>
         <input id="key_d" type="text" size="33" placeholder="128-bits">
         <br><br>
@@ -122,15 +127,23 @@
         }
     </script>
     <script type="text/javascript" src="ascon.js"></script>
+    
+    <!-- Footer -->
     <footer>
-        <center><p><b>________________________</b></p></center>
-        <!-- Hall of Fame -->
-        <center style="display: flex; justify-content: center; color: #0000ffe7; cursor: pointer;" onclick="toggle()"><p>Hall of Fame</p><p id="arrow">&#9660;</p></center>
         <center>
+            <p><b>________________________</b></p>
+            <!-- ctf -->
+            <div style="display: flex; justify-content: center; cursor: pointer;" onclick="ctf_toggle()"><p>playascon ctf</p><p id="ctf_arrow">&nbsp;&#9660;</p></div>
+            <div id="ctf"></div>
+            <!-- Hall of Fame -->
+            <div style="display: flex; justify-content: center; color: #0000ffe7; cursor: pointer;" onclick="hof_toggle()"><p>Hall of Fame</p><p id="hof_arrow">&#9660;</p></div>
             <div id="hof"></div>
+            <!-- Signature -->
+            <p><a style="text-decoration:none" href="./KATs/KAT.html">Known Answer Tests (KATs)</a></p>
+            <p><a style="text-decoration:none" href="https://github.com/motarekk/motarekk.github.io" target="_blank">source code</a></p>
+            <center<p>by <a style="text-decoration:none" href="https://www.linkedin.com/in/mohamed-tarek-159a821ba" target="_blank">motarek</a></p>
         </center>
-        <center><p><a style="text-decoration:none" href="https://github.com/motarekk/motarekk.github.io" target="_blank">source code</a></p></center>
-        <center><p>by <a style="text-decoration:none" href="https://www.linkedin.com/in/mohamed-tarek-159a821ba" target="_blank">motarek</a></p></center>
+
     </footer>
 </body>
 </html>
