@@ -25,13 +25,14 @@ function ascon_128_KAT(){
         try {
             var ct_to_test = ascon_aead(key, nonce, ad, pt, operation, variant).toUpperCase();
         } catch (error) {
-            console.log(`failed test: ${ascon_128_kats[i].Count}`);
+            console.log(`Error in test case ${ascon_128a_kats[i].Count}: ${error}`)
         }
 
         if(ct == ct_to_test){
             passed += 1;
         } else {
             failed += 1;
+            console.log(`failed test: ${ascon_128_kats[i].Count}`);
         }
     }
 
@@ -52,13 +53,14 @@ function ascon_128_KAT(){
         try {
             var pt_to_test = ascon_aead(key, nonce, ad, ct.toLowerCase(), operation, variant).toUpperCase();
         } catch (error) {
-            console.log(`failed test: ${ascon_128_kats[i].Count}`);
+            console.log(`Error in test case ${ascon_128a_kats[i].Count}: ${error}`);
         }
 
         if(pt == pt_to_test){
             passed += 1;
         } else {
             failed += 1;
+            console.log(`failed test: ${ascon_128_kats[i].Count}`);
         }
     }
 
