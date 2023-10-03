@@ -21,13 +21,14 @@ function ascon_xofa_KAT(){
         try {
             var md_to_test = ascon_xof(msg, 32, variant).toUpperCase();
         } catch (error) {
-            console.log(`failed test: ${ascon_xofa_kats[i].Count}`);
+            console.log(`Error in test case ${ascon_128a_kats[i].Count}: ${error}`);
         }
 
         if(md == md_to_test){
             passed += 1;
         } else {
             failed += 1;
+            console.log(`failed test: ${ascon_xofa_kats[i].Count}`);
         }
     }
 
