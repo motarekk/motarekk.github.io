@@ -211,21 +211,24 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
     }
 
     // processing of last block t
+    var c_lastlen_word = c_lastlen % 8;
+    var c_padding1 = str_to_long(pad(''.padEnd(c_lastlen_word, '0'), 8).slice(c_lastlen_word));
+    var c_mask = 0xFFFFFFFFFFFFFFFFn >> BigInt(c_lastlen_word*8);
+
     if(rate == 8){
         var c_last = pad_ciphertext(ciphertext.slice(blocks*2), rate);
         plaintext += to_unicode(int_to_hex(S[0] ^ c_last)).slice(0, c_lastlen); 
-        var padded_plaintext = pad(plaintext.slice(blocks), rate);
-        S[0] ^= str_to_long(padded_plaintext);
+        S[0] = c_last ^ (S[0] & c_mask) ^ c_padding1;
     } else if(rate == 16){
         if(c_lastlen < 8){
             var c_last = [pad_ciphertext(ciphertext.slice(blocks*2, blocks*2+rate), 8), pad_ciphertext(ciphertext.slice(blocks*2+rate), 8)];
             plaintext += to_unicode(int_to_hex(S[0] ^ c_last[0]) + int_to_hex(S[1] ^ c_last[1])).slice(0, c_lastlen); 
-            S[0] ^= str_to_long(pad(plaintext.slice(blocks), 8));
+            S[0] = c_last[0] ^ (S[0] & c_mask) ^ c_padding1;
         } else{
-            var c_last = [pad_ciphertext_(ciphertext.slice(blocks*2, blocks*2+rate), 8), pad_ciphertext_(ciphertext.slice(blocks*2+rate), 8)];
+            var c_last = [pad_ciphertext_(ciphertext.slice(blocks*2, blocks*2+rate), 8), pad_ciphertext(ciphertext.slice(blocks*2+rate), 8)];
             plaintext += to_unicode(int_to_hex(S[0] ^ c_last[0]) + int_to_hex(S[1] ^ c_last[1])).slice(0, c_lastlen); 
-            S[0] ^= str_to_long(pad(plaintext.slice(blocks, blocks+8), 8));
-            S[1] ^= str_to_long(pad(plaintext.slice(blocks+8),8)) 
+            S[0] = c_last[0];
+            S[1] = c_last[1] ^ (S[1] & c_mask) ^ c_padding1;
         }
     }
 
@@ -462,18 +465,37 @@ function xof(message, hashlength, variant){
 }
 
 // hall of fame
-var flag = false;
+var hof_flag = false;
 var hof ="<p>Thanks to all who reported bugs and contributed to improve this tool.</p><p>______________</p><p>Joshua Holden</p><p>Majid M.Niknam</p><p>______________</p><br>";
-function toggle(){
-    if(!flag){
-        document.getElementById('arrow').classList.remove('rotate-up');
-        document.getElementById('arrow').classList.add('rotate-down');
+function hof_toggle(){
+    if(!hof_flag){
+        document.getElementById('hof_arrow').classList.remove('rotate-up');
+        document.getElementById('hof_arrow').classList.add('rotate-down');
         document.getElementById('hof').innerHTML = hof;
-        flag = true;
+        hof_flag = true;
     } else {
-        document.getElementById('arrow').classList.remove('rotate-down');
-        document.getElementById('arrow').classList.add('rotate-up');
+        document.getElementById('hof_arrow').classList.remove('rotate-down');
+        document.getElementById('hof_arrow').classList.add('rotate-up');
         document.getElementById('hof').innerHTML = "";
-        flag = false;
+        hof_flag = false;
+    }
+}
+
+// ctf
+var ctf_flag = false;
+var ctf = "solve a challenge, reach out to me with the flag, your name get listd in the solvers section<br>you'll find my email in ascon.js file<br>____________<br>";
+var challenge_1 = "<br><b>#1</b> <b>challenge name:</b> epic fail<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;difficulty:</b> can't be easier<br><b>description:</b> \"I am lazy to generate more than one random number. I don't think you can decrypt my message though!\"<br><br><b>givens:</b><br>variant = Ascon-128<br>associated_data = playascon_ctf<br>nonce = ed7299db65af5fb3a683c17127a6050c<br>encrypted_message = 4d47c9affe000c392114494d7d9a4b874c455111a258cfa61c075dbcb36515eda093accf3c636ba1061510edbe58b87349cf975518536ed68c5a84c82c<br>tag = e9533dd90ef6abd06fa665496fed5054<br>key = well, at least I know this must kept secret!"
+
+function ctf_toggle(){
+    if(!ctf_flag){
+        document.getElementById('ctf_arrow').classList.remove('rotate-up');
+        document.getElementById('ctf_arrow').classList.add('rotate-down');
+        document.getElementById('ctf').innerHTML = ctf+challenge_1;
+        ctf_flag = true;
+    } else {
+        document.getElementById('ctf_arrow').classList.remove('rotate-down');
+        document.getElementById('ctf_arrow').classList.add('rotate-up');
+        document.getElementById('ctf').innerHTML = "";
+        ctf_flag = false;
     }
 }
