@@ -483,7 +483,7 @@ function hof_toggle(){
 
 // ctf
 var ctf_flag = false;
-var ctf = "solve a challenge, reach out to me with the flag, your name get listd in the solvers section<br>you'll find my email in ascon.js file<br>____________<br>";
+var ctf = "solve a challenge, reach out to me with the flag, your name get listed in the solvers section<br>you'll find my email in ascon.js file<br>____________<br>";
 var challenge_1 = "<br><b>#1</b> <b>challenge name:</b> epic fail<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;difficulty:</b> can't be easier<br><b>description:</b> \"I am lazy to generate more than one random number. I don't think you can decrypt my message though!\"<br><br><b>givens:</b><br>variant = Ascon-128<br>associated_data = playascon_ctf<br>nonce = ed7299db65af5fb3a683c17127a6050c<br>encrypted_message = 4d47c9affe000c392114494d7d9a4b874c455111a258cfa61c075dbcb36515eda093accf3c636ba1061510edbe58b87349cf975518536ed68c5a84c82c<br>tag = e9533dd90ef6abd06fa665496fed5054<br>key = well, at least I know this must kept secret!"
 
 function ctf_toggle(){
