@@ -36,6 +36,11 @@ function ascon_128_KAT(){
         }
     }
 
+    var note = "";
+    if(failed > 0){
+        note = "\n\nnote: you can view the failed tests in the console";
+    }
+
     var print_encryption_KAT_result = `(encryption):\npassed: ${passed}\nfailed: ${failed}`;
     console.log(print_encryption_KAT_result);
 
@@ -64,7 +69,7 @@ function ascon_128_KAT(){
         }
     }
 
-    var note = "";
+    note = "";
     if(failed > 0){
         note = "\n\nnote: you can view the failed tests in the console";
     }
