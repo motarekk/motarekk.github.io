@@ -41,7 +41,7 @@
     <option value="Ascon-XOFa">Ascon-XOFa</option>
     </select>
 
-    <p>note: key & nonce must be entered in hexadecimal.</p>
+    <p id="note">note: key & nonce must be entered in hexadecimal.</p>
 
     <!-- XoF -->
     <div style="display: none;" id="xof_section">
@@ -111,6 +111,7 @@
         var xof_section = document.getElementById("xof_section");
         var encrypt_section = document.getElementById("encrypt_section");
         var decrypt_section = document.getElementById("decrypt_section");
+        var note = document.getElementById("note");
         var variant = document.getElementsByName('variants')[0].value;
 
         function change_variant(variant){
@@ -119,10 +120,12 @@
                 xof_section.style.display = "block";
                 encrypt_section.style.display = "none";
                 decrypt_section.style.display = "none";
+                note.style.display = "none";
             } else {
                 xof_section.style.display = "none";
                 encrypt_section.style.display = "block";
                 decrypt_section.style.display = "block";
+                note.style.display = "block";
             }
         }
     </script>
