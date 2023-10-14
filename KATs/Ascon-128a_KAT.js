@@ -59,7 +59,7 @@ function ascon_128a_KAT(){
         try {
             var pt_to_test = ascon_aead(key, nonce, ad, ct.toLowerCase(), operation, variant).toUpperCase();
         } catch (error) {
-            console.log(`Error in test case ${ascon_128a_kats[i].Count}: ${error}`)
+            console.log(`Error in test case ${ascon_128a_kats[i].Count}: ${error}`);
         }
         
         if(pt == pt_to_test){
@@ -78,5 +78,5 @@ function ascon_128a_KAT(){
     var print_decryption_KAT_result = `\n(decryption):\npassed: ${passed}\nfailed: ${failed}`;
     console.log(print_decryption_KAT_result);
 
-    return print_title+"\n"+print_encryption_KAT_result+"\n"+print_decryption_KAT_result+note;
+    return `${print_title}\n${print_encryption_KAT_result}\n${print_decryption_KAT_result}${note}`;
 }
