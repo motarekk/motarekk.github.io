@@ -19,6 +19,16 @@ function non_eng(){
     }
 }
 
+// data format: raw or hex
+var format = "raw";
+function data_format(){
+    if(format == "raw"){
+        format = "hex";
+    } else {
+        format = "raw";
+    }
+}
+
 // one function for authenticated encryption & decryption
 function ascon_aead(key, nonce, associateddata, data, operation, variant){
     // make sure parameters are within the correct ranges
@@ -44,15 +54,20 @@ function ascon_aead(key, nonce, associateddata, data, operation, variant){
         b = 8;
         rate = 16;
     } 
+    
+    // data format: raw or hex
+    if(format == "hex"){associateddata = to_unicode(associateddata);}
 
     S = ascon_initialize(S, rate, a, b, key, nonce);
     ascon_process_associated_data(S, b, rate, associateddata);
 
     if(operation == "encrypt"){
+        if(format == "hex"){data = to_unicode(data);} // data format: raw or hex
         ciphertext = ascon_process_plaintext(S, b, rate, data);
         tag = ascon_finalize(S, rate, a, key);
         // output = ciphertext (same size as plaintext) + tag (128-bits)
         return ciphertext + tag;
+
     } else {
         plaintext = ascon_process_ciphertext(S, b, rate, data.slice(0, -32)); // exclude the tag
         tag = ascon_finalize(S, rate, a, key);
@@ -73,6 +88,10 @@ function ascon_xof(message, hashlength, variant){
     var a = 12;     // intial & final rounds
     var b = 12;      // intermediate rounds
 
+    // data format: raw or hex
+    if(format == "hex"){
+        message = to_unicode(message);
+    }
     if(variant=="Ascon-XOFa"){
         b = 8;
     }
@@ -139,7 +158,7 @@ function ascon_process_associated_data(S, b, rate, associateddata) {
             S[0] ^= str_to_long(ad_padded.slice(block, block+8));
 
             if(rate == 16){
-                S[1] ^= str_to_long(ad_padded.slice(block+8, block+16))
+                S[1] ^= str_to_long(ad_padded.slice(block+8, block+16));
             }
             ascon_permutation(S, b);
         }
@@ -273,7 +292,7 @@ function ascon_permutation(S, rounds) {
         S[2] ^= S[1];
         
         // NOR & ANDing operations
-        T = []
+        T = [];
         for(var i = 0; i < 5; i++){
             T.push((S[i] ^ BigInt('0xFFFFFFFFFFFFFFFF')) & S[(i+1)%5]);
         }
@@ -449,6 +468,10 @@ function decrypt(key, nonce, ad, ct, variant){
 
     if(pt != null){
         verification = "succeeded!";
+        // data format: raw or hex
+        if(format == "hex"){
+            pt = JSON.stringify(bytes_to_hex_(to_ascii(pt))).replaceAll(/[",\][]/g,'');
+        }
         return "plaintext: " + pt + "\nverification: " + verification;
     } else {
         return "verification failed!";
@@ -484,7 +507,7 @@ function hof_toggle(){
 // ctf
 var ctf_flag = false;
 var ctf = "solve a challenge, reach out to me with the flag, your name get listed in the solvers section<br>you'll find my email in ascon.js file<br>____________<br>";
-var challenge_1 = "<br><b>#1</b> <b>challenge name:</b> epic fail<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;difficulty:</b> can't be easier<br><b>description:</b> \"I am lazy to generate more than one random number. I don't think you can decrypt my message though!\"<br><br><b>givens:</b><br>variant = Ascon-128<br>associated_data = playascon_ctf<br>nonce = ed7299db65af5fb3a683c17127a6050c<br>encrypted_message = 4d47c9affe000c392114494d7d9a4b874c455111a258cfa61c075dbcb36515eda093accf3c636ba1061510edbe58b87349cf975518536ed68c5a84c82c<br>tag = e9533dd90ef6abd06fa665496fed5054<br>key = well, at least I know this must kept secret!"
+var challenge_1 = "<br><b>#1</b> <b>challenge name:</b> epic fail<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;difficulty:</b> can't be easier<br><b>description:</b> \"I am lazy to generate more than one random number. I don't think you can decrypt my message though!\"<br><br><b>givens:</b><br>variant = Ascon-128<br>associated_data = playascon_ctf<br>nonce = ed7299db65af5fb3a683c17127a6050c<br>encrypted_message = 4d47c9affe000c392114494d7d9a4b874c455111a258cfa61c075dbcb36515eda093accf3c636ba1061510edbe58b87349cf975518536ed68c5a84c82c<br>tag = e9533dd90ef6abd06fa665496fed5054<br>key = well, at least I know this must kept secret!";
 
 function ctf_toggle(){
     if(!ctf_flag){
