@@ -33,11 +33,11 @@
     </center>
     <!-- Ascon variants -->
     <label for="variants">variant</label>
-    <select name="variants" onchange="change_variant(document.getElementsByName('variants')[0].value)" id="variants">
-    <option value="Ascon-128">Ascon-128</option>
-    <option value="Ascon-128a">Ascon-128a</option>
-    <option value="Ascon-XOF">Ascon-XOF</option>
-    <option value="Ascon-XOFa">Ascon-XOFa</option>
+    <select name="variants" id="variants" onchange="change_variant(document.getElementsByName('variants')[0].value)">
+        <option value="Ascon-128">Ascon-128</option>
+        <option value="Ascon-128a">Ascon-128a</option>
+        <option value="Ascon-XOF">Ascon-XOF</option>
+        <option value="Ascon-XOFa">Ascon-XOFa</option>
     </select>
 
     <p id="note">note: key & nonce must be entered in hexadecimal.</p>
@@ -49,6 +49,10 @@
             <p>***</p>
         </center>
         <label for="message">message: </label>
+        <select name="data_format" id="data_format" onchange="data_format()">
+            <option value="raw">raw</option>
+            <option value="hex">hex</option>
+        </select>
         <textarea id="message" type="text" placeholder="text to be authenticated" rows="4" cols="50"></textarea>
         <br><br>
         <label for="hashlength">output length (bytes):</label>
@@ -72,7 +76,12 @@
         <input id="nonce" type="text" size="33" placeholder="128-bits">  <button onclick="document.getElementById('nonce').value = get_random_bytes(16)">generate random nonce</button>
         <br><br>
         <label for="plaintext">plaintext:</label>
+        <select name="data_format" id="data_format" onchange="data_format()">
+            <option value="raw">raw</option>
+            <option value="hex">hex</option>
+        </select>
         <textarea id="plaintext" type="text" placeholder="text to be encrypted" rows="4" cols="50"></textarea><label for="lang"> Non-English</label><input id="lang" type="checkbox" onclick="non_eng()">
+        <br><br>
         <br><br>
         <label for="associateddata">associated data:</label>
         <textarea id="associateddata" type="text" placeholder="text to be authenticated"  rows="4" cols="50"></textarea>
