@@ -27,7 +27,7 @@ The code has been updated to meet the NIST SP 800-232 standard.
 ### Capture The Flag (CTF)
 <p>To make this tool more fun, I’ve added an easy CTF (Capture The Flag) challenge to be solved. I am planning to add more challenges, to help you visualize how a nonce misuse attack could take place for example.</p>
 
-<img width="899" alt="ctf" src="https://github.com/motarekk/motarekk.github.io/assets/104282801/9a309357-dfbf-4d5e-9ce5-fef0471697cd">
+<img width="810" alt="playascon_ctf" src="https://github.com/user-attachments/assets/bd5f0c8b-53e4-4a6a-85a6-fb4ac566b63a" />
 
 ### Hall of Fame (HoF)
 <p>After the <a href="https://groups.google.com/a/list.nist.gov/g/lwc-forum/c/1k6o4hlYG6A" target="_blank">initial release</a> of playascon, people started testing it and found some bugs in the format of the data displayed. You can find the two issues here:</p>
@@ -40,4 +40,3 @@ As a sign of appreciation for reaching out, I made a Hall of Fame to list their 
 
 <img width="452" alt="github_comment" src="https://github.com/motarekk/motarekk.github.io/assets/104282801/2950b84f-545c-4047-9cca-0d9e2dff2028">
 <p>Also, if you have any suggestions to modify or add something to the tool, feel free to raise an issue or email me at 0xmohamed.tarek@gmail.com</p>
-
