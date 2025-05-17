@@ -7,10 +7,10 @@
 <p><a href="https://motarekk.github.io/" target="_blank">playascon</a> is a Javascript implementation of Ascon cipher that runs in your browser without any server-side latency. There is no ads or fancy designs, and it's obviously open source.</p>
 
 ### Supported variants
-<li>Ascon-128</li>
-<li>Ascon-128a</li>
-<li>Ascon-XOF</li>
-<li>Ascon-XOFa</li>
+<li>Ascon-AEAD128</li>
+<li>Ascon-Hash256</li>
+<li>Ascon-XOF128</li>
+<li>Ascon-CXOF128</li>
 <br>
 <p>Ascon is a family of many variants:</p>
 <img width="788" alt="ascon-family" src="https://github.com/motarekk/motarekk.github.io/assets/104282801/86c96c3e-c684-44e2-adb4-f9cf6c8b3239">

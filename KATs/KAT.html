@@ -22,35 +22,34 @@
         <p>===========================================</p>
     </center>
     <br><br>
-    <button onclick="setTimeout(() => Ascon_128_KAT_results.innerText = ascon_128_KAT(), 500); Ascon_128_KAT_results.innerText = 'Loading...';">Run KATs for Ascon-128</button>
-    <p id="Ascon_128_KAT_results"></p>
+    <button onclick="setTimeout(() => ascon_aead128_KAT_results.innerText = ascon_aead128_KAT(), 500); ascon_aead128_KAT_results.innerText = 'Loading...';">Run KATs for Ascon-AEAD128</button>
+    <p id="ascon_aead128_KAT_results"></p>
     <br><br>
-    <button onclick="setTimeout(() => Ascon_128a_KAT_results.innerText = ascon_128a_KAT(), 500); Ascon_128a_KAT_results.innerText = 'Loading...';">Run KATs for Ascon-128a</button>
-    <p id="Ascon_128a_KAT_results"></p>
+    <button onclick="setTimeout(() => ascon_hash256_KAT_results.innerText = ascon_hash256_KAT(), 500); ascon_hash256_KAT_results.innerText = 'Loading...';">Run KATs for Ascon-Hash256</button>
+    <p id="ascon_hash256_KAT_results"></p>
     <br><br>
-    <button onclick="setTimeout(() => Ascon_xof_KAT_results.innerText = ascon_xof_KAT(), 500); Ascon_xof_KAT_results.innerText = 'Loading...';">Run KATs for Ascon-XOF</button>
-    <p id="Ascon_xof_loading"></p>
-    <p id="Ascon_xof_KAT_results"></p>
+    <button onclick="setTimeout(() => ascon_xof128_KAT_results.innerText = ascon_xof128_KAT(), 500); ascon_xof128_KAT_results.innerText = 'Loading...';">Run KATs for Ascon-XOF128</button>
+    <p id="ascon_xof128_KAT_results"></p>
     <br><br>
-    <button onclick="setTimeout(() => Ascon_xofa_KAT_results.innerText = ascon_xofa_KAT(), 500); Ascon_xofa_KAT_results.innerText = 'Loading...';">Run KATs for Ascon-XOFa</button>
-    <p id="Ascon_xofa_KAT_results"></p>
+    <button onclick="setTimeout(() => ascon_cxof128_KAT_results.innerText = ascon_cxof128_KAT(), 500); ascon_cxof128_KAT_results.innerText = 'Loading...';">Run KATs for Ascon-CXOF128</button>
+    <p id="ascon_cxof128_KAT_results"></p>
 
     <!-- scripts -->
     <script>
-        var Ascon_128_KAT_results = document.getElementById('Ascon_128_KAT_results');
-        var Ascon_128a_KAT_results = document.getElementById('Ascon_128a_KAT_results');
-        var Ascon_xof_KAT_results = document.getElementById('Ascon_xof_KAT_results');
-        var Ascon_xofa_KAT_results = document.getElementById('Ascon_xofa_KAT_results');
+        var ascon_aead128_KAT_results = document.getElementById('ascon_aead128_KAT_results');
+        var ascon_hash256_KAT_results = document.getElementById('ascon_hash256_KAT_results');
+        var ascon_xof128_KAT_results = document.getElementById('ascon_xof128_KAT_results');
+        var ascon_cxof128_KAT_results = document.getElementById('ascon_cxof128_KAT_results');
     </script>
     <script type="text/javascript" src="./../ascon.js"></script>
     <script type="text/javascript" src="LWC_AEAD_KAT_128.js"></script>
-    <script type="text/javascript" src="LWC_AEAD_KAT_128a.js"></script>
-    <script type="text/javascript" src="LWC_XOF_KAT.js"></script>
-    <script type="text/javascript" src="LWC_XOFa_KAT.js"></script>
-    <script type="text/javascript" src="Ascon-128_KAT.js"></script>
-    <script type="text/javascript" src="Ascon-128a_KAT.js"></script>
-    <script type="text/javascript" src="Ascon-XOF_KAT.js"></script>
-    <script type="text/javascript" src="Ascon-XOFa_KAT.js"></script>
+    <script type="text/javascript" src="LWC_Hash256_KAT.js"></script>
+    <script type="text/javascript" src="LWC_XOF128_KAT.js"></script>
+    <script type="text/javascript" src="LWC_CXOF128_KAT.js"></script>
+    <script type="text/javascript" src="Ascon_AEAD128_KAT.js"></script>
+    <script type="text/javascript" src="Ascon_Hash256_KAT.js"></script>
+    <script type="text/javascript" src="Ascon_XOF128_KAT.js"></script>
+    <script type="text/javascript" src="Ascon_CXOF128_KAT.js"></script>
 
     <!-- Footer -->
     <footer style="padding-top: 5em;">

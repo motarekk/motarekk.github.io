@@ -34,18 +34,18 @@
     <!-- Ascon variants -->
     <label for="variants">variant</label>
     <select name="variants" id="variants" onchange="change_variant(document.getElementsByName('variants')[0].value)">
-        <option value="Ascon-128">Ascon-128</option>
-        <option value="Ascon-128a">Ascon-128a</option>
-        <option value="Ascon-XOF">Ascon-XOF</option>
-        <option value="Ascon-XOFa">Ascon-XOFa</option>
+        <option value="Ascon-AEAD128">Ascon-AEAD128</option>
+        <option value="Ascon-Hash256">Ascon-Hash256</option>
+        <option value="Ascon-XOF128">Ascon-XOF128</option>
+        <option value="Ascon-CXOF128">Ascon-CXOF128</option>
     </select>
 
     <p id="note">note: key & nonce must be entered in hexadecimal.</p>
 
-    <!-- XoF -->
-    <div style="display: none;" id="xof_section">
+    <!-- Hash -->
+    <div style="display: none;" id="hash_section">
         <center>
-            <h4 style="text-decoration-line: underline;">Extendible Output Function (XOF)</h4>
+            <h4 style="text-decoration-line: underline;">Hash</h4>
             <p>***</p>
         </center>
         <label for="message">message: </label>
@@ -58,9 +58,14 @@
         <label for="hashlength">output length (bytes):</label>
         <input id="hashlength" type="number" size="33" placeholder="32 bytes by default" step="8">
         <br><br>
-        <center><button type="submit" onclick="document.getElementById('XOF_result').innerText = xof(document.getElementById('message').value, document.getElementById('hashlength').value, document.getElementsByName('variants')[0].value)">Hash</button></center>
+        <div style="display: none;" id="custom">
+        <label for="customization" >customization: </label>
+        <textarea id="customization" type="text" placeholder="customization: a bytes object of at most 256 bytes specifying the customization string (only for Ascon-CXOF128)" rows="4" cols="50"></textarea>
+        <br><br>
+        </div>
+        <center><button type="submit" onclick="document.getElementById('hash_result').innerText = hash(document.getElementById('message').value, document.getElementById('hashlength').value, document.getElementsByName('variants')[0].value, document.getElementById('customization').value)">Hash</button></center>
         <br>
-        <p id="XOF_result"></p>
+        <p id="hash_result"></p>
     </div>
 
     <!-- Encrypt -->
@@ -116,25 +121,31 @@
     </div>
     
     <script>
-        var xof_section = document.getElementById("xof_section");
+        var hash_section = document.getElementById("hash_section");
+        var customization = document.getElementById("custom");
         var encrypt_section = document.getElementById("encrypt_section");
         var decrypt_section = document.getElementById("decrypt_section");
         var note = document.getElementById("note");
         var variant = document.getElementsByName('variants')[0].value;
 
         function change_variant(variant){
-            variant = variant;
-            if(variant == "Ascon-XOF" || variant == "Ascon-XOFa"){
-                xof_section.style.display = "block";
+            if(variant != "Ascon-AEAD128"){
+                hash_section.style.display = "block";
                 encrypt_section.style.display = "none";
                 decrypt_section.style.display = "none";
                 note.style.display = "none";
+                customization.style.display = "none";
             } else {
-                xof_section.style.display = "none";
+                hash_section.style.display = "none";
                 encrypt_section.style.display = "block";
                 decrypt_section.style.display = "block";
                 note.style.display = "block";
+                customization.style.display = "none";
             }
+            if(variant == "Ascon-CXOF128") {
+                customization.style.display = "block";
+            }
+            
         }
     </script>
     <script type="text/javascript" src="ascon.js"></script>

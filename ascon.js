@@ -1,11 +1,11 @@
 /*
-* Javascript implementation of Ascon AEAD & Ascon XOF
-* Supported variants: Ascon-128, Ascon-128a, XOF, XOFa
+* Javascript implementation of Ascon, an authenticated cipher and hash function
+* NIST SP 800-232
+* Algorithms: Ascon-AEAD128, Ascon-Hash256, Ascon-XOF128, Ascon-CXOF128
 * By Mohamed Tarek, aka. motarek
 * GitHub: https://github.com/motarekk
 * Email: 0xmohamed.tarek@gmail.com
 * LinkedIn: https://www.linkedin.com/in/mohamed-tarek-159a821ba/
-* Ascon main steps: initialize > associated data > plaintext/ciphertext > finalization
 * key & nonce must be entered in hexadecimal
 */
 
@@ -20,7 +20,7 @@ function non_eng(){
 }
 
 // data format: raw or hex
-var format = "raw";
+var format = "raw"; 
 function data_format(){
     if(format == "raw"){
         format = "hex";
@@ -29,8 +29,8 @@ function data_format(){
     }
 }
 
-// one function for authenticated encryption & decryption
-function ascon_aead(key, nonce, associateddata, data, operation, variant){
+// === Ascon AEAD encryption and decryption ===
+function ascon_aead(key, nonce, associateddata, data, operation, variant="Ascon-AEAD128"){
     // make sure parameters are within the correct ranges
     if(key.length != 32 | nonce.length != 32){
         return "key & nonce must be 16 bytes";
@@ -44,16 +44,11 @@ function ascon_aead(key, nonce, associateddata, data, operation, variant){
     // parameters
     var S = [0, 0, 0, 0, 0];    // state raws
     var a = 12;    // intial & final rounds
-    var b = 6;    // intermediate rounds
-    var rate = 8;    // bytes
+    var b = 8;    // intermediate rounds
+    var rate = 16;    // bytes
     var plaintext = "";
     var ciphertext = "";
     var tag = "";
-    
-    if(variant == "Ascon-128a"){
-        b = 8;
-        rate = 16;
-    } 
     
     // data format: raw or hex
     if(format == "hex"){associateddata = to_unicode(associateddata);}
@@ -80,54 +75,97 @@ function ascon_aead(key, nonce, associateddata, data, operation, variant){
     }
 }
 
-// Ascon-XOF
-function ascon_xof(message, hashlength, variant){
+// Ascon hash/xof
+function ascon_hash(message, hashlength=32, variant="Ascon-Hash256", customization=""){
+    /*
+    * customization: a bytes object of at most 256 bytes specifying the customization string (only for Ascon-CXOF128)
+    */
+    versions = {"Ascon-Hash256": 2,
+        "Ascon-XOF128": 3,
+        "Ascon-CXOF128": 4};
+
+    // checks
+    if(variant == "Ascon-Hash256"){
+        if(hashlength != 32){
+            return "in Ascon-Hash256, hash length must be 32 bytes.";
+        } 
+    }
+    if(variant == "Ascon-CXOF128"){
+        if(customization.length > 256){
+            return "in Ascon-CXOF128, customization string can be at most 256 bytes.";
+        }
+    } else {
+        if(customization.length != 0){
+            return "customization string is only for Ascon-CXOF128.";
+        }
+    }
+
     // parameters
     var S = [0, 0, 0, 0, 0];    // state raws
     var rate = 8        // bytes
     var a = 12;     // intial & final rounds
     var b = 12;      // intermediate rounds
+    var taglen = 0;
+    var customize = false;
+
+    if(variant == "Ascon-Hash256"){
+        taglen = 256;
+    }
+    if (variant == "Ascon-CXOF128"){
+        customize = true;
+    }
 
     // data format: raw or hex
     if(format == "hex"){
         message = to_unicode(message);
-    }
-    if(variant=="Ascon-XOFa"){
-        b = 8;
+        customization = to_unicode(customization);
     }
 
-    // intialization
-    var iv = (int_to_hex(0, 2) + int_to_hex(rate*8,2) + int_to_hex(a, 2) + int_to_hex(a-b,2)).padEnd(16, '0');
+    // Intialization
+    iv = int_to_hex(versions[variant], 2) + int_to_hex(0, 2) + int_to_hex((b<<4) + a, 2) + bigEndianToLittleEndian(int_to_hex(taglen, 4)) + int_to_hex(rate, 2) + int_to_hex(0, 4);
     var zeros = int_to_hex(0, 64);
-    var S = bytes_to_state(iv+zeros);
-    ascon_permutation(S, a);
+    var S = bytes_to_state(iv+zeros);    
+    ascon_permutation(S, 12);
 
-    // padding
-    m_padded = pad(message, rate);
+    // Customization
+    if(customize){
+        var z_padding = "\x01" + zero_bytes(rate - (customization.length % rate) - 1);
+        var z_length = to_unicode(bigEndianToLittleEndian(int_to_hex(customization.length*8, 8*2)));
+        var z_padded = z_length + customization + z_padding;
 
-    // processing of first s-1 blocks
-    for(var block = 0; block < m_padded.length-rate; block += rate){
-        S[0] ^= str_to_long(m_padded.slice(block, block+8));
-        ascon_permutation(S, b);
+        // customization blocks 0,...,m
+        for(var block = 0; block < z_padded.length; block += rate){
+            S[0] ^= bytes_to_int(z_padded.slice(block, block+rate));
+            ascon_permutation(S, 12);
+        }
     }
 
-    // processing of last block
-    var block = m_padded.length - rate;
-    S[0] ^= str_to_long(m_padded.slice(block, block+8));
+    // Message Processing (Absorbing)
+    var m_padding = "\x01" + zero_bytes(rate - (message.length % rate) - 1);
+    var m_padded = message + m_padding;
 
-    // finalization: Message Squeezing
+    // message blocks 0,...,n
+    for(var block = 0; block < m_padded.length; block += rate){
+        S[0] ^= str_to_long(m_padded.slice(block, block+rate));
+        ascon_permutation(S, 12);
+    }
+
+    // Finalization: Message Squeezing
     var H = "";
-    ascon_permutation(S, a);
+    // ascon_permutation(S, a);
     while(H.length < hashlength*2){
-        H += int_to_hex(S[0], 16);
-        ascon_permutation(S, b);
+        H += bigEndianToLittleEndian(int_to_hex(S[0], rate*2));
+        ascon_permutation(S, 12);
     }
+
     return H.slice(0, hashlength*2);
 }
 
 function ascon_initialize(S, rate, a, b, key, nonce) {
-    var iv_zeros = "00000000";
-    var iv = int_to_hex(bytes_to_hex([128])+bytes_to_hex([rate*8])+"0"+bytes_to_hex([a])+bytes_to_hex(["0"+b])+iv_zeros);
+    var version = 1;
+    var taglen = 128;
+    var iv_zeros = "0000";
+    var iv = int_to_hex(version, 2) + int_to_hex(0, 2) + int_to_hex((b<<4) + a, 2) + int_to_hex(taglen, 2) + int_to_hex(rate, 4) + iv_zeros;
     var initial_state = iv + key + nonce;
 
     // filling the state
@@ -162,46 +200,37 @@ function ascon_process_associated_data(S, b, rate, associateddata) {
             }
             ascon_permutation(S, b);
         }
-        }
-        S[4] ^= BigInt(1);
     }
+    S[4] ^= 9223372036854775808n; // 9223372036854775808n == 1<<63
+}
 
 function ascon_process_plaintext(S, b, rate, plaintext) {
     // padding
-    var padded_plaintext = pad(plaintext, rate);
+    var padded_plaintext = pad(plaintext, 8);
     var p_lastlen = plaintext.length % rate;
     var p_zero_bytes = (rate - p_lastlen) - 1;
     var required_len = plaintext.length + p_zero_bytes + 1;
-    
+
     // absorbtion of plaintext & squeezing of ciphertext
     // processing of first t-1 blocks (all blocks except the last one)
     var ciphertext = []; 
     var blocks = required_len - rate;
     for(var i = 0; i < blocks; i+=rate){
-        if(rate == 8){
-            S[0] ^= str_to_long(padded_plaintext.slice(i, i+8));
-            ciphertext += int_to_hex(S[0]);
-        } else if(rate == 16){
-            S[0] ^= str_to_long(padded_plaintext.slice(i, i+8));
-            S[1] ^= str_to_long(padded_plaintext.slice(i+8, i+16));
-            ciphertext += int_to_hex(S[0]) + int_to_hex(S[1]);
-        }
+        S[0] ^= str_to_long(padded_plaintext.slice(i, i+8));
+        S[1] ^= str_to_long(padded_plaintext.slice(i+8, i+16));
+        ciphertext += bigEndianToLittleEndian(int_to_hex(S[0])) + bigEndianToLittleEndian(int_to_hex(S[1]));
         ascon_permutation(S, b);
     }
 
     // processing of last block t
-    if(rate == 8){
-        S[0] ^= str_to_long(pad(plaintext.slice(blocks), rate));
-        ciphertext += int_to_hex(S[0]).slice(0, p_lastlen*2);
-    } else if(rate == 16){
-        S[0] ^= str_to_long(padded_plaintext.slice(blocks, blocks+8));
-        S[1] ^= str_to_long(padded_plaintext.slice(blocks+8));
-        ciphertext += int_to_hex(S[0]).slice(0, Math.min(16, p_lastlen*2)) + int_to_hex(S[1]).slice(0, Math.max(0, p_lastlen*2-16));
-    }
+    S[0] ^= str_to_long(padded_plaintext.slice(blocks, blocks+8));
+    S[1] ^= str_to_long(padded_plaintext.slice(blocks+8, blocks+16));
+    ciphertext += bigEndianToLittleEndian(int_to_hex(S[0])).slice(0, Math.min(16, p_lastlen*2)) + bigEndianToLittleEndian(int_to_hex(S[1])).slice(0, Math.max(0, p_lastlen*2-16));
+    
     return ciphertext;
 }
 
-function ascon_process_ciphertext(S, b, rate, ciphertext){ 
+function ascon_process_ciphertext(S, b, rate, ciphertext){
     // padding
     var c_lastlen = (ciphertext.length/2) % rate;
     var c_zero_bytes = (rate - c_lastlen) - 1;
@@ -214,42 +243,23 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
     var mult = 2;
     
     for(var i = 0; i < blocks; i+=rate){
-        if(rate == 8){
-            Ci = BigInt('0x' + ciphertext.slice(i*2, i+rate*mult));
-            mult+=1;
-            plaintext += to_unicode(int_to_hex(S[0] ^ Ci)); 
-            S[0] = Ci;
-        } else if(rate == 16){
-            Ci = [BigInt('0x' + ciphertext.slice(i*2, i+8*mult)), BigInt('0x' + ciphertext.slice(i*2+rate, i+8*mult+rate))];
-            mult+=2;
-            plaintext += to_unicode(int_to_hex(S[0] ^ Ci[0]) + int_to_hex(S[1] ^ Ci[1]));
-            S[0] = Ci[0];
-            S[1] = Ci[1];
-        }
+        Ci = [BigInt('0x' + bigEndianToLittleEndian(ciphertext.slice(i*2, i+8*mult))), BigInt('0x' + bigEndianToLittleEndian(ciphertext.slice(i*2+rate, i+8*mult+rate)))];
+        mult+=2;
+        plaintext += to_unicode(bigEndianToLittleEndian(int_to_hex(S[0] ^ Ci[0])) + bigEndianToLittleEndian(int_to_hex(S[1] ^ Ci[1])));
+        S[0] = Ci[0];
+        S[1] = Ci[1];
         ascon_permutation(S, b);
     }
 
     // processing of last block t
-    var c_lastlen_word = c_lastlen % 8;
-    var c_padding1 = str_to_long(pad(''.padEnd(c_lastlen_word, '0'), 8).slice(c_lastlen_word));
-    var c_mask = 0xFFFFFFFFFFFFFFFFn >> BigInt(c_lastlen_word*8);
+    c_padx = zero_bytes(c_lastlen) + "\x01" + zero_bytes(rate-c_lastlen-1);
+    c_mask = zero_bytes(c_lastlen) + ff_bytes(rate-c_lastlen);
+    Ci = [BigInt('0x' + bigEndianToLittleEndian(ciphertext.slice(blocks*2, blocks*2+16))), BigInt('0x' + bigEndianToLittleEndian(ciphertext.slice(blocks*2+16, blocks*2+32)))];
 
-    if(rate == 8){
-        var c_last = pad_ciphertext(ciphertext.slice(blocks*2), rate);
-        plaintext += to_unicode(int_to_hex(S[0] ^ c_last)).slice(0, c_lastlen); 
-        S[0] = c_last ^ (S[0] & c_mask) ^ c_padding1;
-    } else if(rate == 16){
-        if(c_lastlen < 8){
-            var c_last = [pad_ciphertext(ciphertext.slice(blocks*2, blocks*2+rate), 8), pad_ciphertext(ciphertext.slice(blocks*2+rate), 8)];
-            plaintext += to_unicode(int_to_hex(S[0] ^ c_last[0]) + int_to_hex(S[1] ^ c_last[1])).slice(0, c_lastlen); 
-            S[0] = c_last[0] ^ (S[0] & c_mask) ^ c_padding1;
-        } else{
-            var c_last = [pad_ciphertext_(ciphertext.slice(blocks*2, blocks*2+rate), 8), pad_ciphertext(ciphertext.slice(blocks*2+rate), 8)];
-            plaintext += to_unicode(int_to_hex(S[0] ^ c_last[0]) + int_to_hex(S[1] ^ c_last[1])).slice(0, c_lastlen); 
-            S[0] = c_last[0];
-            S[1] = c_last[1] ^ (S[1] & c_mask) ^ c_padding1;
-        }
-    }
+    plaintext += to_unicode(bigEndianToLittleEndian(int_to_hex(S[0] ^ Ci[0])) + bigEndianToLittleEndian(int_to_hex(S[1] ^ Ci[1]))).slice(0, c_lastlen);
+
+    S[0] = (S[0] & bytes_to_int(c_mask.slice(0, 8))) ^ Ci[0] ^ bytes_to_int(c_padx.slice(0, 8));
+    S[1] = (S[1] & bytes_to_int(c_mask.slice(8, 16))) ^ Ci[1] ^ bytes_to_int(c_padx.slice(8, 16));
 
     // URI-decode plaintext if it's encoded to support non-english texts
     if(!eng){
@@ -258,6 +268,7 @@ function ascon_process_ciphertext(S, b, rate, ciphertext){
             return null;
         }
     }
+
     return plaintext;
 }
 
@@ -268,16 +279,17 @@ function ascon_finalize(S, rate, a, key) {
     }
 
     // step 1: XOR the key with the state, then permute
-    S[rate/8+0] ^= BigInt('0x' + key.slice(0, 16));
-    S[rate/8+1] ^= BigInt('0x' + key.slice(16));
+    S[rate/8+0] ^= BigInt('0x' + bigEndianToLittleEndian(key.slice(0, 16)));
+    S[rate/8+1] ^= BigInt('0x' + bigEndianToLittleEndian(key.slice(16)));
 
     ascon_permutation(S, a);
 
-    // step 2: 4th & 5th raws of the state are xored with the key, and the result will be the tag
-    S[3] ^= BigInt('0x' + key.slice(0, 16));
-    S[4] ^= BigInt('0x' + key.slice(16));
-    var tag = int_to_hex(S[3]) + int_to_hex(S[4]);
-    return tag;
+    // step 2: 4th & 5th raws of the state are XORed with the key, and the result will be the tag
+    S[3] ^= BigInt('0x' + bigEndianToLittleEndian(key.slice(0, 16)));
+    S[4] ^= BigInt('0x' + bigEndianToLittleEndian(key.slice(16)));
+
+    var tag = int_to_hex(S[4]) + int_to_hex(S[3]);
+    return bigEndianToLittleEndian(tag);
 }
 
 function ascon_permutation(S, rounds) {
@@ -316,14 +328,33 @@ function ascon_permutation(S, rounds) {
 /*
 === helper functions ===
 */
+function bigEndianToLittleEndian(hex) { // got help from ChatGPT on this
+    // Ensure even length
+    if (hex.length % 2 !== 0) {
+        throw new Error("Hex string length must be even.");
+    } else if (hex.length == 0) {
+        return "00";
+    }
+
+    // Split into bytes (2 characters each)
+    const bytes = hex.match(/.{2}/g);
+
+    // Reverse the array
+    const reversedBytes = bytes.reverse();
+
+    // Join back into a string
+    return reversedBytes.join('');
+}
+
 function bytes_to_state(bytes){ // input: hexadecimal bytes
     var state = [];
     for(var w = 0; w < 5; w++){
-        state.push(BigInt('0x' + bytes.slice(16*w, 16*(w+1))));
+        state.push(BigInt('0x' + bigEndianToLittleEndian(bytes.slice(16*w, 16*(w+1)))));
     }
     return state;
 }
-//left shift
+
+// left shift
 function l_shift(number, shift) {
     return BigInt(number) * BigInt(Math.pow(2, shift));
 }
@@ -399,20 +430,31 @@ function int_to_hex(int, pad=8) {
     return int;
 }
 // convert string > ascii > hex > decimal
-// equivalent to 'int("str".hex(), 16)' in python
+// equivalent to 'int(b"str".hex(), 16)' in python
 function str_to_long(str) {
     var str = bytes_to_hex_(to_ascii(str));
     var long = "";
-    for(var i = 0; i < str.length; i++){
+    for(var i = str.length-1; i >= 0; i--){
         long += str[i];
     }
     return BigInt('0x0' + long);
 }
 
+// convert big endian to little endian
+function bytes_to_int(bytes) {
+    var sum = 0n;
+    for (var i = 0; i < bytes.length; i++){
+        bi = str_to_long(bytes[i]);
+        bi = bi << BigInt(i*8);
+        sum += bi;
+    }
+    return sum;
+}
+
 function pad(data, rate){
     var d_lastlen = data.length % rate;
     var d_zero_bytes = (rate - d_lastlen) - 1;
-    var padding = "\x80";
+    var padding = "\x01";
 
     for(var i = 0; i < d_zero_bytes; i++){
         padding += "\x00";
@@ -443,6 +485,22 @@ function pad_ciphertext_(data, rate){
     } else {
         return BigInt('0x' + (data + bytes_to_hex(padding)).replace(/,/g, ''));
     }
+}
+
+function zero_bytes(n){
+    var zb = "";
+    for (var i = 0; i < n; i++){
+        zb += "\x00";
+    }
+    return zb;
+}
+
+function ff_bytes(n){
+    var ffb = "";
+    for (var i = 0; i < n; i++){
+        ffb += "\xff";
+    }
+    return ffb;
 }
 
 // preserve special characters while URI-encoding
@@ -479,12 +537,12 @@ function decrypt(key, nonce, ad, ct, variant){
 
 }
 
-function xof(message, hashlength, variant){
+function hash(message, hashlength, variant, customization){
     if(hashlength==''){
         hashlength = 32;
     }
-    var H = ascon_xof(message, hashlength, variant);
-    return "Hash: " + H;
+    var H = ascon_hash(message, hashlength, variant, customization);
+    return "Tag: " + H;
 }
 
 // hall of fame
@@ -507,7 +565,7 @@ function hof_toggle(){
 // ctf
 var ctf_flag = false;
 var ctf = "solve a challenge, reach out to me with the flag, your name get listed in the solvers section<br>you'll find my email in ascon.js file<br>____________<br>";
-var challenge_1 = "<br><b>#1</b> <b>challenge name:</b> epic fail<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;difficulty:</b> can't be easier<br><b>description:</b> \"I am lazy to generate more than one random number. I don't think you can decrypt my message though!\"<br><br><b>givens:</b><br>variant = Ascon-128<br>associated_data = playascon_ctf<br>nonce = ed7299db65af5fb3a683c17127a6050c<br>encrypted_message = 4d47c9affe000c392114494d7d9a4b874c455111a258cfa61c075dbcb36515eda093accf3c636ba1061510edbe58b87349cf975518536ed68c5a84c82c<br>tag = e9533dd90ef6abd06fa665496fed5054<br>key = well, at least I know this must kept secret!";
+var challenge_1 = "<br><b>#1</b> <b>challenge name:</b> epic fail<b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;difficulty:</b> can't be easier<br><b>description:</b> \"I am lazy to generate more than one random number. I don't think you can decrypt my message though!\"<br><br><b>givens:</b><br>variant = Ascon-AEAD128<br>associated_data = playascon_ctf<br>nonce = ed7299db65af5fb3a683c17127a6050c<br>encrypted_message = b6f991508141a21cfa31b642aa9109d523cfc6eae7f71b16a19b1d9f202fa75e6aecf23220afae7fb233ec9e91b3b816b1ad<br>tag = 380b99364b6d26af115cab63f2ed2d3a<br>key = well, at least I know this must kept secret!";
 
 function ctf_toggle(){
     if(!ctf_flag){
