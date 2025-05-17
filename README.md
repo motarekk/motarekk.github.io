@@ -6,15 +6,14 @@
 ### First online tool for <a href="https://ascon.iaik.tugraz.at/" target="_blank">Ascon cipher</a> on the internet [<a href="https://medium.com/@motarekk/playascon-3aba1fbad330" target="_blank">blogpost</a>]
 <p><a href="https://motarekk.github.io/" target="_blank">playascon</a> is a Javascript implementation of Ascon cipher that runs in your browser without any server-side latency. There is no ads or fancy designs, and it's obviously open source.</p>
 
+### UPDATE
+The code has been updated to meet the NIST SP 800-232 standard.
+
 ### Supported variants
 <li>Ascon-AEAD128</li>
 <li>Ascon-Hash256</li>
 <li>Ascon-XOF128</li>
 <li>Ascon-CXOF128</li>
-<br>
-<p>Ascon is a family of many variants:</p>
-<img width="788" alt="ascon-family" src="https://github.com/motarekk/motarekk.github.io/assets/104282801/86c96c3e-c684-44e2-adb4-f9cf6c8b3239">
-<p>As discussed in the <a href="https://groups.google.com/a/list.nist.gov/g/lwc-forum/c/XIePMSwDSmQ" target="_blank">LWC-Forum</a>, NIST is considering only some of these variants to be standardized, which are: Ascon-128, Ascon-128a for AEAD, and Ascon-XOF for hashing. Therefore, those are the variants supported by playascon.</p>
 
 ### Features
 <p>Along with the basic functionality of the tool which is encryption, decryption, and hashing, there are two other features to mention:</p>
