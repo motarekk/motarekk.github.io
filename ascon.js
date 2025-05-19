@@ -1,10 +1,9 @@
 /*
-* Javascript implementation of Ascon, an authenticated cipher and hash function
-* NIST SP 800-232
+* Javascript implementation of Ascon, an authenticated cipher and hash function (NIST SP 800-232 standard)
 * Algorithms: Ascon-AEAD128, Ascon-Hash256, Ascon-XOF128, Ascon-CXOF128
 * By Mohamed Tarek, aka. motarek
 * GitHub: https://github.com/motarekk
-* Email: 0xmohamed.tarek@gmail.com
+* Email: motarek424@gmail.com
 * LinkedIn: https://www.linkedin.com/in/mohamed-tarek-159a821ba/
 * key & nonce must be entered in hexadecimal
 */
@@ -152,7 +151,6 @@ function ascon_hash(message, hashlength=32, variant="Ascon-Hash256", customizati
 
     // Finalization: Message Squeezing
     var H = "";
-    // ascon_permutation(S, a);
     while(H.length < hashlength*2){
         H += bigEndianToLittleEndian(int_to_hex(S[0], rate*2));
         ascon_permutation(S, 12);
@@ -366,7 +364,7 @@ function rotr(val, r){
 function get_random_bytes(num){
     var buf = new Uint8Array(num);
     crypto.getRandomValues(buf);
-    buf = bytes_to_hex_(buf);
+    buf = bytes_to_hex(buf);
     var urandom = "";
     for(var i = 0; i < buf.length; i++){
         urandom += buf[i];
@@ -404,14 +402,6 @@ function to_ascii(str){
 function bytes_to_hex(bytes){
     var hex = [];
     for(var i = 0; i < bytes.length; i++){
-        hex.push(bytes[i].toString(16));
-    }
-    return hex;
-}
-
-function bytes_to_hex_(bytes){
-    var hex = [];
-    for(var i = 0; i < bytes.length; i++){
         if(bytes[i].toString(16).length % 2 != 0){
             hex.push('0'+bytes[i].toString(16));
         } else {
@@ -432,7 +422,7 @@ function int_to_hex(int, pad=8) {
 // convert string > ascii > hex > decimal
 // equivalent to 'int(b"str".hex(), 16)' in python
 function str_to_long(str) {
-    var str = bytes_to_hex_(to_ascii(str));
+    var str = bytes_to_hex(to_ascii(str));
     var long = "";
     for(var i = str.length-1; i >= 0; i--){
         long += str[i];
@@ -460,31 +450,6 @@ function pad(data, rate){
         padding += "\x00";
     }
     return data + padding;
-}
-
-function pad_ciphertext(data, rate){
-    var d_lastlen = (data.length/2) % rate;
-    var d_zero_bytes = rate - d_lastlen;
-    var padding = ''.padEnd(d_zero_bytes*2, '0');
-    if(data == ""){
-        data = "0";
-    }
-    return BigInt('0x' + (data + bytes_to_hex(padding)).replace(/,/g, ''));
-}
-
-function pad_ciphertext_(data, rate){
-    var d_lastlen = (data.length/2) % rate;
-    var d_zero_bytes = rate - d_lastlen;
-    var padding = ''.padEnd(d_zero_bytes*2, '0');
-
-    if(data == ""){
-        data = "0";
-    }
-    if(data.length % rate == 0){
-        return BigInt('0x' + data);
-    } else {
-        return BigInt('0x' + (data + bytes_to_hex(padding)).replace(/,/g, ''));
-    }
 }
 
 function zero_bytes(n){
@@ -528,7 +493,7 @@ function decrypt(key, nonce, ad, ct, variant){
         verification = "succeeded!";
         // data format: raw or hex
         if(format == "hex"){
-            pt = JSON.stringify(bytes_to_hex_(to_ascii(pt))).replaceAll(/[",\][]/g,'');
+            pt = JSON.stringify(bytes_to_hex(to_ascii(pt))).replaceAll(/[",\][]/g,'');
         }
         return "plaintext: " + pt + "\nverification: " + verification;
     } else {
